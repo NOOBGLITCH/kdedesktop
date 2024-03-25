@@ -1,10 +1,8 @@
 import os
 import subprocess
-
+CRD = input("Google CRD SSH Code :")
 username = "user" #@param {type:"string"}
 password = "root" #@param {type:"string"}
-CRP = input("Google CRP :")
-
 os.system(f"useradd -m {username}")
 os.system(f"adduser {username} sudo")
 os.system(f"echo '{username}:{password}' | sudo chpasswd")
@@ -77,7 +75,7 @@ X-GNOME-Autostart-enabled=true""".format(link)
             os.system(f"chown {user}:{user} /home/{user}/.config")
 
         os.system(f"adduser {user} chrome-remote-desktop")
-        command = f"{CRP} --pin={Pin}"
+        command = f"{CRD} --pin={Pin}"
         os.system(f"su - {user} -c '{command}'")
         os.system("service chrome-remote-desktop start")
 
@@ -99,7 +97,7 @@ X-GNOME-Autostart-enabled=true""".format(link)
             pass
 
 try:
-    if CRP == "":
+    if CRD == "":
         print("Please enter authcode from the given link")
     elif len(str(Pin)) < 6:
         print("Enter a pin more or equal to 6 digits")
