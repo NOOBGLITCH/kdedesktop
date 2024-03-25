@@ -26,6 +26,7 @@ class CRD:
         subprocess.run(['wget', 'https://dl.google.com/linux/direct/chrome-remote-desktop_current_amd64.deb'])
         subprocess.run(['dpkg', '--install', 'chrome-remote-desktop_current_amd64.deb'])
         subprocess.run(['apt', 'install', '--assume-yes', '--fix-broken'])
+        print("************************************************************************************")
 
     @staticmethod
     def installDesktopEnvironment():
@@ -35,33 +36,35 @@ class CRD:
         os.system("apt remove --assume-yes gnome-terminal")
         os.system("apt install --assume-yes xscreensaver")
         os.system("systemctl disable lightdm.service")
+        print("************************************************************************************")
 
     @staticmethod
     def installGoogleChrome():
         subprocess.run(["wget", "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"])
         subprocess.run(["dpkg", "--install", "google-chrome-stable_current_amd64.deb"])
         subprocess.run(['apt', 'install', '--assume-yes', '--fix-broken'])
+        print("************************************************************************************")
     
     @staticmethod
     def installTelegram():
-        print("Installing Telegram")
         subprocess.run(["apt", "install", "--assume-yes", "telegram-desktop"])
+        print("************************************************************************************")
 
     @staticmethod
     def installAnyDesk():
-        print("Installing AnyDesk")
         subprocess.run(['sudo', 'apt', 'install', '-y', 'gnupg2'])
         subprocess.run(['curl', '-fsSL', 'https://keys.anydesk.com/repos/DEB-GPG-KEY', '|', 'sudo', 'gpg', '--dearmor', '-o', '/etc/apt/trusted.gpg.d/anydesk.gpg'])
         subprocess.run(['echo', 'deb http://deb.anydesk.com/ all main', '|', 'sudo', 'tee', '/etc/apt/sources.list.d/anydesk-stable.list'])
         subprocess.run(['sudo', 'apt', 'update', '&&', 'sudo', 'apt', 'install', 'anydesk'])
+        print("************************************************************************************")
 
     @staticmethod
     def finish(user):
-        print("Finalizing")
         if Autostart:
             os.makedirs(f"/home/{user}/.config/autostart", exist_ok=True)
             link = "www.youtube.com/@The_Disala"
             colab_autostart = """[Desktop Entry]
+            print("************************************************************************************")
 
 Type=Application
 Name=Colab
