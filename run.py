@@ -23,9 +23,9 @@ class CRDSetup:
 
     @staticmethod
     def installCRD():
-        subprocess.run(['wget', 'https://dl.google.com/linux/direct/chrome-remote-desktop_current_amd64.deb'])
-        subprocess.run(['dpkg', '--install', 'chrome-remote-desktop_current_amd64.deb'])
-        subprocess.run(['apt', 'install', '--assume-yes', '--fix-broken'])
+        subprocess.run(['wget', 'https://dl.google.com/linux/direct/chrome-remote-desktop_current_amd64.deb'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(['dpkg', '--install', 'chrome-remote-desktop_current_amd64.deb'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(['apt', 'install', '--assume-yes', '--fix-broken'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         print("************************************************************************************")
 
     @staticmethod
@@ -40,14 +40,14 @@ class CRDSetup:
 
     @staticmethod
     def installGoogleChrome():
-        subprocess.run(["wget", "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"])
-        subprocess.run(["dpkg", "--install", "google-chrome-stable_current_amd64.deb"])
-        subprocess.run(['apt', 'install', '--assume-yes', '--fix-broken'])
+        subprocess.run(["wget", "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(["dpkg", "--install", "google-chrome-stable_current_amd64.deb"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(['apt', 'install', '--assume-yes', '--fix-broken'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         print("************************************************************************************")
     
     @staticmethod
     def installTelegram():
-        subprocess.run(["apt", "install", "--assume-yes", "telegram-desktop"])
+        subprocess.run(["apt", "install", "--assume-yes", "telegram-desktop"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         print("************************************************************************************")
 
     @staticmethod
