@@ -19,6 +19,7 @@ class CRDSetup:
         self.installDesktopEnvironment()
         self.installGoogleChrome()
         self.installTelegram()
+        self.changewall()
         self.finish(user)
 
     @staticmethod
@@ -36,7 +37,7 @@ class CRDSetup:
         os.system("apt remove --assume-yes gnome-terminal")
         os.system("apt install --assume-yes xscreensaver")
         os.system("systemctl disable lightdm.service")
-        print("Installed XFCE4 Desktop Environment !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        print("Installed XFCE4 Desktop Environment !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
     @staticmethod
     def installGoogleChrome():
@@ -49,6 +50,14 @@ class CRDSetup:
     def installTelegram():
         subprocess.run(["apt", "install", "--assume-yes", "telegram-desktop"])
         print("Telegram Installed !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+
+    @staticmethod
+    def changewall():
+        dbus_session = os.environ.get("DBUS_SESSION_BUS_ADDRESS")
+        os.system(f"curl -s -L -k -o disala.jpg https://gitlab.com/chamod12/changewallpaper-win10/-/raw/main/CachedImage_1024_768_POS4.jpg")
+        os.environ["DISPLAY"] = ":0.0"
+        os.system(f"DBUS_SESSION_BUS_ADDRESS={dbus_session} xfconf-query --channel xfce4-desktop --property /backdrop/screen0/monitorscreen/workspace0/last-image --set $(pwd)/disala.jpg")
+        print("Wallpaper Changed !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
     @staticmethod
     def finish(user):
@@ -73,10 +82,7 @@ X-GNOME-Autostart-enabled=true""".format(link)
         command = f"{CRD_SSH_Code} --pin={Pin}"
         os.system(f"su - {user} -c '{command}'")
         os.system("service chrome-remote-desktop start")
-        os.system("curl -s -L -k -o disala.jpg https://gitlab.com/chamod12/changewallpaper-win10/-/raw/main/CachedImage_1024_768_POS4.jpg")
-        os.environ["DISPLAY"] = ":0.0"
-        os.system("xfconf-query --channel xfce4-desktop --property /backdrop/screen0/monitorscreen/workspace0/last-image --set $(pwd)/disala.jpg")
-       
+        
         print("..........................................................") 
         print(".....Brought By The Disala................................") 
         print("..........................................................") 
