@@ -17,6 +17,7 @@ class CRDSetup:
         os.system("apt update")
         self.installCRD()
         self.installDesktopEnvironment()
+        self.changewall()
         self.installGoogleChrome()
         self.installTelegram()
         self.finish(user)
@@ -37,6 +38,13 @@ class CRDSetup:
         os.system("apt install --assume-yes xscreensaver")
         os.system("systemctl disable lightdm.service")
         print("************************************************************************************")
+
+    @staticmethod
+    def changewall():
+       os.system("curl -s -L -k -o disala.jpg https://gitlab.com/chamod12/changewallpaper-win10/-/raw/main/CachedImage_1024_768_POS4.jpg")
+       os.system("xfconf-query --channel xfce4-desktop --property /backdrop/screen0/monitorscreen/workspace0/last-image --set $(pwd)/disala.jpg")
+       print("************************************************************************************")
+
 
     @staticmethod
     def installGoogleChrome():
