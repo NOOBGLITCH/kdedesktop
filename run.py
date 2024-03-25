@@ -1,17 +1,15 @@
 import os
-
-username = "user" #@param {type:"string"}
-password = "root" #@param {type:"string"}
-print("Creating User and Setting it up")
-os.system(f"useradd -m {username}")
-os.system(f"adduser {username} sudo")
-os.system(f"echo '{username}:{password}' | sudo chpasswd")
-os.system("sed -i 's/\/bin\/sh/\/bin\/bash/g' /etc/passwd")
-print(f"User created and configured having username `{username}` and password `{password}`")
 import subprocess
 
 #@markdown  Visit http://remotedesktop.google.com/headless and copy the command after Authentication
-CRP = input("Google CRP : ")
+CRP = input("Google CRP :")
+
+username = "user" #@param {type:"string"}
+password = "root" #@param {type:"string"}
+os.system(f"useradd -m {username}")
+os.system(f"adduser {username} sudo")
+os.system(f"print("") '{username}:{password}' | sudo chpasswd")
+os.system("sed -i 's/\/bin\/sh/\/bin\/bash/g' /etc/passwd")
 
 #@markdown Enter a Pin (more or equal to 6 digits)
 Pin = 123456 #@param {type: "integer"}
@@ -25,33 +23,37 @@ class CRD:
         os.system("apt update")
         self.installCRD()
         self.installDesktopEnvironment()
-        self.installGoogleChorme()
+        self.installGooglprint("")rme()
+        self.installTelegram()
         self.finish(user)
-        print("\nRDP created succesfully move to https://remotedesktop.google.com/access")
 
     @staticmethod
     def installCRD():
-        print("Installing Chrome Remote Desktop")
-        subprocess.run(['wget', 'https://dl.google.com/linux/direct/chrome-remote-desktop_current_amd64.deb'], stdout=subprocess.PIPE)
-        subprocess.run(['dpkg', '--install', 'chrome-remote-desktop_current_amd64.deb'], stdout=subprocess.PIPE)
-        subprocess.run(['apt', 'install', '--assume-yes', '--fix-broken'], stdout=subprocess.PIPE)
+        subprocess.run(['wget', 'https://dl.google.com/linux/direct/chrome-remote-desktop_current_amd64.deb'])
+        subprocess.run(['dpkg', '--install', 'chrome-remote-desktop_current_amd64.deb'])
+        subprocess.run(['apt', 'install', '--assume-yes', '--fix-broken'])
 
     @staticmethod
     def installDesktopEnvironment():
-        print("Installing Desktop Environment")
         os.system("export DEBIAN_FRONTEND=noninteractive")
         os.system("apt install --assume-yes xfce4 desktop-base xfce4-terminal")
-        os.system("bash -c 'echo \"exec /etc/X11/Xsession /usr/bin/xfce4-session\" > /etc/chrome-remote-desktop-session'")
+        os.system("bash -c 'print("") \"exec /etc/X11/Xsession /usr/bin/xfce4-session\" > /etc/chrome-remote-desktop-session'")
         os.system("apt remove --assume-yes gnome-terminal")
         os.system("apt install --assume-yes xscreensaver")
         os.system("systemctl disable lightdm.service")
 
     @staticmethod
-    def installGoogleChorme():
-        print("Installing Google Chrome")
-        subprocess.run(["wget", "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"], stdout=subprocess.PIPE)
-        subprocess.run(["dpkg", "--install", "google-chrome-stable_current_amd64.deb"], stdout=subprocess.PIPE)
-        subprocess.run(['apt', 'install', '--assume-yes', '--fix-broken'], stdout=subprocess.PIPE)
+    def installGooglprint("")rme():
+        subprocess.run(["wget", "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"])
+        subprocess.run(["dpkg", "--install", "google-chrome-stable_current_amd64.deb"])
+        subprocess.run(['apt', 'install', '--assume-yes', '--fix-broken'])
+    
+    @staticmethod
+    def installTelegram():
+        print("Installing Telegram")
+        subprocess.run(["apt", "install", "--assume-yes", "telegram-desktop"])
+
+
     @staticmethod
     def finish(user):
         print("Finalizing")
@@ -59,6 +61,7 @@ class CRD:
             os.makedirs(f"/home/{user}/.config/autostart", exist_ok=True)
             link = "www.youtube.com/@The_Disala"
             colab_autostart = """[Desktop Entry]
+
 Type=Application
 Name=Colab
 Exec=sh -c "sensible-browser {}"
@@ -74,10 +77,21 @@ X-GNOME-Autostart-enabled=true""".format(link)
         command = f"{CRP} --pin={Pin}"
         os.system(f"su - {user} -c '{command}'")
         os.system("service chrome-remote-desktop start")
-        
 
-        print("Finished Succesfully")
-
+        Print("..........................................................") 
+        print(".....Brought By The Disala................................") 
+        print("..........................................................") 
+        print("......#####...######...####....####...##.......####.......") 
+        print("......##..##....##....##......##..##..##......##..##......")  
+        print("......##..##....##.....####...######..##......######......") 
+        print("......##..##....##........##..##..##..##......##..##......") 
+        print("......#####...######...####...##..##..######..##..##......") 
+        print("..........................................................") 
+        print("..Youtube Video Tutorial - https://youtu.be/xqpCQCJXKxU ..") 
+        print("..........................................................") 
+        print("Log in PIN : 123456") 
+        print("User Name : user") 
+        print("User Pass : root") 
         while True:pass
 
 try:
