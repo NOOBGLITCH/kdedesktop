@@ -1,22 +1,26 @@
-## Windows 10 Colab RDP ft Google Chrome Remote Desktop (CRD) & Ngrok
+# GPU RDP METHOD
+
+## Windows 10 Colab RDP ft Google Chrome Remote Desktop (GCRD)
 
 ![.](spec.png)
 
-# Read This Before Rushing To Actions Tab In Github 💀
+# Read This Before Rushing To Download Colab Workflow 💀
 
-* i'm **not responsible** for **suspended github accounts**
-* **Don't try these in your personal github account** or don't make emails same as your personal github email to make fake github account.
+* i'm **not responsible** for **suspended Google accounts**
+* **Don't try these in your personal Gmail account** 
+* **Don't CrYptO mine , Instant Ban**
+
 ---
-### Windows 10 Least
+### Ubuntu 22.04.3 LTS
 
 VM features:
-* AMD EPYC 7763 64-Core Processor 2.44 GHz (**2 cores**)
-* 16 GB RAM
-* 150+255 GB Disk
+* INTEL Xeon(R) CPU @ 2.20Ghz * 2
+* 12.7 GB RAM
+* llvmpipe (LLVM 15.0.7, 256bits) 12.7GB GPU
+* 100GB Disk
 * We Have Some Cool Features That Other workflows Dosen't Have
   - Automatically Telegram Installed
-  - Automatically Winrar Installed
-  - Automatically VM Quick Config Installed
+  - Automatically Qbittorrent Installed
   - Removed Stupid/Unrated Softwares
   - Added New Wallpaper
   - Ect ...
@@ -24,32 +28,28 @@ VM features:
 ## Deploy and Run
 
 <details>
-    <summary>Windows 10 RDP Install and Run</summary>
+    <summary>Ubuntu RDP Install and Run</summary>
 <br>
     
-* Just **Download The Workflow** from **Release**.
+* **Get Colab Drive file** from **Release**
 
-* **Open Workflow** in **NotePad and Copy All** (**Ctrl+A & Ctrl+C**).
+* Double click the file and click **Play Button **
     
-* **Create new Repo in Github.**
+* Go To [**Google Chrome Remote Desktop (CRD)**](https://remotedesktop.google.com/access) Site 
 
-* Go to **Actions** Tab , Click **set up a workflow yourself**.
+* Click **Set up via SSH**
 
-* **Paste (Ctrl+V) that copied workflow code** & click **Commit changes**...
+* Copy your **Debian Linux SSH** Code**(token)**
     
-* Now go to **Actions** Tab and **select workflow**.
+* Paste it in the **Colab** then hit **Enter**
 
-* Click **Run Workflow** button on the left of **This workflow has a workflow_dispatch event trigger** line.
+* **Wait 3 - 4 Minutes **
 
-* Click the **Run** and Click **Start Building** & **Wait few minutes**.
+* After You See my **Banner Art** , Go to **CRD** and Click **Remote Access**
 
-* **Download & Install LiteManager Viwer Application** On Your Device **([Android/Windows/Linux/Macos](https://www.litemanager.com/download/))**
+* Double Click and Give **PIN : _123456_**
 
-* **Copy the LiteManager ID** in your LiteManager Viwer click **Add New Connection** then **Paste ID in ID Fill**.
-
-* **Copy LiteManager Password from The Run** & **Paste it** & **Hit Enter** (wait some connecting minutes).
-
-* **Enjoy!**
+* Now You're In , Enjoy.
 
 </details>
 
