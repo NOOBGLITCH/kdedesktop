@@ -18,7 +18,6 @@ class CRD:
         self.installDesktopEnvironment()
         self.installGoogleChrome()
         self.installTelegram()
-        self.installAnyDesk()
         self.finish(user)
 
     @staticmethod
@@ -48,14 +47,6 @@ class CRD:
     @staticmethod
     def installTelegram():
         subprocess.run(["apt", "install", "--assume-yes", "telegram-desktop"])
-        print("************************************************************************************")
-
-    @staticmethod
-    def installAnyDesk():
-        subprocess.run(['sudo', 'apt', 'install', '-y', 'gnupg2'])
-        subprocess.run(['curl', '-fsSL', 'https://keys.anydesk.com/repos/DEB-GPG-KEY', '|', 'sudo', 'gpg', '--dearmor', '-o', '/etc/apt/trusted.gpg.d/anydesk.gpg'])
-        subprocess.run(['echo', 'deb http://deb.anydesk.com/ all main', '|', 'sudo', 'tee', '/etc/apt/sources.list.d/anydesk-stable.list'])
-        subprocess.run(['sudo', 'apt', 'update', '&&', 'sudo', 'apt', 'install', 'anydesk'])
         print("************************************************************************************")
 
     @staticmethod
