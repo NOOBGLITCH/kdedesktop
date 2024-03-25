@@ -18,9 +18,10 @@ class CRDSetup:
         os.system("apt update")
         self.installCRD()
         self.installDesktopEnvironment()
+        self.changewall()
         self.installGoogleChrome()
         self.installTelegram()
-        self.changewall()
+        self.installQbit()
         self.finish(user)
 
     @staticmethod
@@ -60,6 +61,12 @@ class CRDSetup:
         destination_path = '/usr/share/backgrounds/xfce/'
         shutil.copy(custom_wallpaper_path, destination_path)
         print("Wallpaper Changed !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+   
+    @staticmethod
+    def installQbit():
+        subprocess.run(["sudo", "apt", "update"])
+        subprocess.run(["sudo", "apt", "install", "-y", "qbittorrent"])
+        print("Qbittorrent Installed !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
     @staticmethod
     def finish(user):
