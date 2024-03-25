@@ -23,7 +23,7 @@ class CRD:
         os.system("apt update")
         self.installCRD()
         self.installDesktopEnvironment()
-        self.installGooglprint("")rme()
+        self.installGoogleChrome()
         self.installTelegram()
         self.finish(user)
 
@@ -43,7 +43,7 @@ class CRD:
         os.system("systemctl disable lightdm.service")
 
     @staticmethod
-    def installGooglprint("")rme():
+    def installGoogleChrome():
         subprocess.run(["wget", "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"])
         subprocess.run(["dpkg", "--install", "google-chrome-stable_current_amd64.deb"])
         subprocess.run(['apt', 'install', '--assume-yes', '--fix-broken'])
