@@ -1,6 +1,7 @@
 import os
 import subprocess
-CRD = input("Google CRD SSH Code :")
+
+CRD_SSH_Code = input("Google CRD SSH Code :")
 username = "user" #@param {type:"string"}
 password = "root" #@param {type:"string"}
 os.system(f"useradd -m {username}")
@@ -11,7 +12,7 @@ os.system("sed -i 's/\/bin\/sh/\/bin\/bash/g' /etc/passwd")
 Pin = 123456 #@param {type: "integer"}
 Autostart = True #@param {type: "boolean"}
 
-class CRD:
+class CRDSetup:
     def __init__(self, user):
         os.system("apt update")
         self.installCRD()
@@ -69,7 +70,7 @@ X-GNOME-Autostart-enabled=true""".format(link)
             os.system(f"chown {user}:{user} /home/{user}/.config")
 
         os.system(f"adduser {user} chrome-remote-desktop")
-        command = f"{CRD} --pin={Pin}"
+        command = f"{CRD_SSH_Code} --pin={Pin}"
         os.system(f"su - {user} -c '{command}'")
         os.system("service chrome-remote-desktop start")
 
@@ -91,11 +92,11 @@ X-GNOME-Autostart-enabled=true""".format(link)
             pass
 
 try:
-    if CRD == "":
+    if CRD_SSH_Code == "":
         print("Please enter authcode from the given link")
     elif len(str(Pin)) < 6:
         print("Enter a pin more or equal to 6 digits")
     else:
-        CRD(username)
+        CRDSetup(username)
 except NameError as e:
     print("'username' variable not found, Create a user first")
