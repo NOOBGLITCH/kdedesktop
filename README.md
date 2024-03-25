@@ -1,4 +1,4 @@
-## Windows 10 Colab RDP ft Google Chrome Remote Desktop (CRD)
+## Windows 10 Colab RDP ft Google Chrome Remote Desktop (CRD) & Ngrok
 
 ![.](spec.png)
 
