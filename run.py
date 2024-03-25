@@ -1,5 +1,6 @@
 import os
 import subprocess
+import shutil
 
 CRD_SSH_Code = input("Google CRD SSH Code :")
 username = "user" #@param {type:"string"}
@@ -53,13 +54,10 @@ class CRDSetup:
 
     @staticmethod
     def changewall():
-        dbus_session = os.environ.get("DBUS_SESSION_BUS_ADDRESS")
-        if dbus_session is None:
-            print("Failed to detect DBUS_SESSION_BUS_ADDRESS. Setting it explicitly.")
-            dbus_session = "unix:path=/run/user/$(id -u)/bus"
-            os.environ["DBUS_SESSION_BUS_ADDRESS"] = dbus_session       
-        os.system(f"curl -s -L -k -o disala.jpg https://gitlab.com/chamod12/changewallpaper-win10/-/raw/main/CachedImage_1024_768_POS4.jpg")
-        os.system(f"xfconf-query --channel xfce4-desktop --property /backdrop/screen0/monitorscreen/workspace0/last-image --set $(pwd)/disala.jpg")
+        os.system(f"curl -s -L -k -o xfce-verticals.png https://gitlab.com/chamod12/changewallpaper-win10/-/raw/main/CachedImage_1024_768_POS4.jpg")
+        new_image_path = "/xfce-verticals.png"
+        destination_path = "/usr/share/backgrounds/xfce/"
+        shutil.copy(new_image_path, os.path.join(destination_path, "xfce-verticals.png"))
         print("Wallpaper Changed !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
     @staticmethod
