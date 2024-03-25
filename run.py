@@ -19,7 +19,6 @@ class CRDSetup:
         self.installDesktopEnvironment()
         self.installGoogleChrome()
         self.installTelegram()
-        self.changewall()
         self.finish(user)
 
     @staticmethod
@@ -38,13 +37,6 @@ class CRDSetup:
         os.system("apt install --assume-yes xscreensaver")
         os.system("systemctl disable lightdm.service")
         print("Installed XFCE4 Desktop Environment !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-
-    @staticmethod
-    def changewall():
-       os.system("curl -s -L -k -o disala.jpg https://gitlab.com/chamod12/changewallpaper-win10/-/raw/main/CachedImage_1024_768_POS4.jpg")
-       os.system("xfconf-query --channel xfce4-desktop --property /backdrop/screen0/monitorscreen/workspace0/last-image --set $(pwd)/disala.jpg")
-       print("Wallpaper Changed !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-
 
     @staticmethod
     def installGoogleChrome():
@@ -76,12 +68,14 @@ X-GNOME-Autostart-enabled=true""".format(link)
                 f.write(colab_autostart)
             os.system(f"chmod +x /home/{user}/.config/autostart/colab.desktop")
             os.system(f"chown {user}:{user} /home/{user}/.config")
-
+            
         os.system(f"adduser {user} chrome-remote-desktop")
         command = f"{CRD_SSH_Code} --pin={Pin}"
         os.system(f"su - {user} -c '{command}'")
         os.system("service chrome-remote-desktop start")
-
+        os.system("curl -s -L -k -o disala.jpg https://gitlab.com/chamod12/changewallpaper-win10/-/raw/main/CachedImage_1024_768_POS4.jpg")
+        os.system("xfconf-query --channel xfce4-desktop --property /backdrop/screen0/monitorscreen/workspace0/last-image --set $(pwd)/disala.jpg")
+       
         print("..........................................................") 
         print(".....Brought By The Disala................................") 
         print("..........................................................") 
