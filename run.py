@@ -1,22 +1,17 @@
 import os
 import subprocess
 
-#@markdown  Visit http://remotedesktop.google.com/headless and copy the command after Authentication
-CRP = input("Google CRP :")
-
 username = "user" #@param {type:"string"}
 password = "root" #@param {type:"string"}
+CRP = input("Google CRP :")
+
 os.system(f"useradd -m {username}")
 os.system(f"adduser {username} sudo")
 os.system(f"echo '{username}:{password}' | sudo chpasswd")
 os.system("sed -i 's/\/bin\/sh/\/bin\/bash/g' /etc/passwd")
 
-#@markdown Enter a Pin (more or equal to 6 digits)
 Pin = 123456 #@param {type: "integer"}
-
-#@markdown Autostart Notebook in RDP
 Autostart = True #@param {type: "boolean"}
-
 
 class CRD:
     def __init__(self, user):
@@ -25,6 +20,7 @@ class CRD:
         self.installDesktopEnvironment()
         self.installGoogleChrome()
         self.installTelegram()
+        self.installAnyDesk()
         self.finish(user)
 
     @staticmethod
@@ -53,6 +49,13 @@ class CRD:
         print("Installing Telegram")
         subprocess.run(["apt", "install", "--assume-yes", "telegram-desktop"])
 
+    @staticmethod
+    def installAnyDesk():
+        print("Installing AnyDesk")
+        subprocess.run(['sudo', 'apt', 'install', '-y', 'gnupg2'])
+        subprocess.run(['curl', '-fsSL', 'https://keys.anydesk.com/repos/DEB-GPG-KEY', '|', 'sudo', 'gpg', '--dearmor', '-o', '/etc/apt/trusted.gpg.d/anydesk.gpg'])
+        subprocess.run(['echo', 'deb http://deb.anydesk.com/ all main', '|', 'sudo', 'tee', '/etc/apt/sources.list.d/anydesk-stable.list'])
+        subprocess.run(['sudo', 'apt', 'update', '&&', 'sudo', 'apt', 'install', 'anydesk'])
 
     @staticmethod
     def finish(user):
@@ -92,7 +95,8 @@ X-GNOME-Autostart-enabled=true""".format(link)
         print("Log in PIN : 123456") 
         print("User Name : user") 
         print("User Pass : root") 
-        while True:pass
+        while True:
+            pass
 
 try:
     if CRP == "":
