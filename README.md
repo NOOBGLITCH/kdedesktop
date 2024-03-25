@@ -33,17 +33,17 @@ VM features:
     
 * **Get Colab Drive file** from **Release**
 
-* Double click the file and click **Play Button **
+* Double click the file and click **Play Button**
     
 * Go To [**Google Chrome Remote Desktop (CRD)**](https://remotedesktop.google.com/access) Site 
 
 * Click **Set up via SSH**
 
-* Copy your **Debian Linux SSH** Code**(token)**
+* Copy your **Debian Linux SSH** Code **(token)**
     
 * Paste it in the **Colab** then hit **Enter**
 
-* **Wait 3 - 4 Minutes **
+* **Wait 3 - 4 Minutes**
 
 * After You See my **Banner Art** , Go to **CRD** and Click **Remote Access**
 
