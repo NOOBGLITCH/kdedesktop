@@ -54,9 +54,12 @@ class CRDSetup:
     @staticmethod
     def changewall():
         dbus_session = os.environ.get("DBUS_SESSION_BUS_ADDRESS")
+        if dbus_session is None:
+            print("Failed to detect DBUS_SESSION_BUS_ADDRESS. Setting it explicitly.")
+            dbus_session = "unix:path=/run/user/$(id -u)/bus"
+            os.environ["DBUS_SESSION_BUS_ADDRESS"] = dbus_session       
         os.system(f"curl -s -L -k -o disala.jpg https://gitlab.com/chamod12/changewallpaper-win10/-/raw/main/CachedImage_1024_768_POS4.jpg")
-        os.environ["DISPLAY"] = ":0.0"
-        os.system(f"DBUS_SESSION_BUS_ADDRESS={dbus_session} xfconf-query --channel xfce4-desktop --property /backdrop/screen0/monitorscreen/workspace0/last-image --set $(pwd)/disala.jpg")
+        os.system(f"xfconf-query --channel xfce4-desktop --property /backdrop/screen0/monitorscreen/workspace0/last-image --set $(pwd)/disala.jpg")
         print("Wallpaper Changed !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
     @staticmethod
