@@ -11,10 +11,10 @@ print(f"User created and configured having username `{username}` and password `{
 import subprocess
 
 #@markdown  Visit http://remotedesktop.google.com/headless and copy the command after Authentication
-CRP = input("remotedesktop.google.com > Set Up Via SSH > Begin > Next >Authorize > Copy Debian Linux")
+CRP = input("Google CRP : ")
 
 #@markdown Enter a Pin (more or equal to 6 digits)
-Pin = disalardp #@param {type: "integer"}
+Pin = 123456 #@param {type: "integer"}
 
 #@markdown Autostart Notebook in RDP
 Autostart = True #@param {type: "boolean"}
