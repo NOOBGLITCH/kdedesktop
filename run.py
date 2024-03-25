@@ -17,17 +17,17 @@ class CRDSetup:
         os.system("apt update")
         self.installCRD()
         self.installDesktopEnvironment()
-        self.changewall()
         self.installGoogleChrome()
         self.installTelegram()
+        self.changewall()
         self.finish(user)
 
     @staticmethod
     def installCRD():
-        subprocess.run(['wget', 'https://dl.google.com/linux/direct/chrome-remote-desktop_current_amd64.deb'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        subprocess.run(['dpkg', '--install', 'chrome-remote-desktop_current_amd64.deb'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        subprocess.run(['apt', 'install', '--assume-yes', '--fix-broken'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        print("************************************************************************************")
+        subprocess.run(['wget', 'https://dl.google.com/linux/direct/chrome-remote-desktop_current_amd64.deb'])
+        subprocess.run(['dpkg', '--install', 'chrome-remote-desktop_current_amd64.deb'])
+        subprocess.run(['apt', 'install', '--assume-yes', '--fix-broken'])
+        print("Chrome Remoted Desktop Installed !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
     @staticmethod
     def installDesktopEnvironment():
@@ -37,26 +37,26 @@ class CRDSetup:
         os.system("apt remove --assume-yes gnome-terminal")
         os.system("apt install --assume-yes xscreensaver")
         os.system("systemctl disable lightdm.service")
-        print("************************************************************************************")
+        print("Installed XFCE4 Desktop Environment !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
     @staticmethod
     def changewall():
        os.system("curl -s -L -k -o disala.jpg https://gitlab.com/chamod12/changewallpaper-win10/-/raw/main/CachedImage_1024_768_POS4.jpg")
        os.system("xfconf-query --channel xfce4-desktop --property /backdrop/screen0/monitorscreen/workspace0/last-image --set $(pwd)/disala.jpg")
-       print("************************************************************************************")
+       print("Wallpaper Changed !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
 
     @staticmethod
     def installGoogleChrome():
-        subprocess.run(["wget", "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        subprocess.run(["dpkg", "--install", "google-chrome-stable_current_amd64.deb"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        subprocess.run(['apt', 'install', '--assume-yes', '--fix-broken'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        print("************************************************************************************")
+        subprocess.run(["wget", "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"])
+        subprocess.run(["dpkg", "--install", "google-chrome-stable_current_amd64.deb"])
+        subprocess.run(['apt', 'install', '--assume-yes', '--fix-broken'])
+        print("Google Chrome Installed !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     
     @staticmethod
     def installTelegram():
-        subprocess.run(["apt", "install", "--assume-yes", "telegram-desktop"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        print("************************************************************************************")
+        subprocess.run(["apt", "install", "--assume-yes", "telegram-desktop"])
+        print("Telegram Installed !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
     @staticmethod
     def finish(user):
@@ -64,7 +64,7 @@ class CRDSetup:
             os.makedirs(f"/home/{user}/.config/autostart", exist_ok=True)
             link = "www.youtube.com/@The_Disala"
             colab_autostart = """[Desktop Entry]
-            print("************************************************************************************")
+            print("Finalizing !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
 Type=Application
 Name=Colab
