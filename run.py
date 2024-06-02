@@ -55,7 +55,7 @@ class CRDSetup:
 
     @staticmethod
     def changewall():
-        os.system(f"curl -s -L -k -o xfce-verticals.png https://gitlab.com/chamod12/changewallpaper-win10/-/raw/main/CachedImage_1024_768_POS4.jpg")
+        os.system(f"curl -s -L -k -o xfce-verticals.png https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh6S-m4OLmvtcZS8ZTVV6URDle3ElT3wy4mi2Zp1CPZ4B5k8JBHsxfQHoc6X9H0TNI0Mx-vS-Nvedg3Eu9lDkz7vZ0X3vo0xO1OjHLzmVkKMviP52PjB1fkveE51FmfgP-QQv0JGXM-ZnFJMTGU-gfFCQbbQ9DVchPVJ_xUMR5Dx-5hffAxAoCioOST9_0/s892/Wallpaper.png")
         current_directory = os.getcwd()
         custom_wallpaper_path = os.path.join(current_directory, "xfce-verticals.png")
         destination_path = '/usr/share/backgrounds/xfce/'
