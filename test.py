@@ -6,7 +6,6 @@ CRD_SSH_Code = os.getenv('CRD_SSH_CODE')
 if not CRD_SSH_Code:
     print("Environment variable CRD_SSH_CODE not set")
     sys.exit(1)
-
 print(f"Google CRD SSH Code: {CRD_SSH_Code}")
 username = "user" #@param {type:"string"}
 password = "root" #@param {type:"string"}
