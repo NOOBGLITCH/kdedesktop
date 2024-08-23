@@ -38,6 +38,8 @@ class CRDSetup:
         os.system("bash -c 'echo \"exec /etc/X11/Xsession /usr/bin/xfce4-session\" > /etc/chrome-remote-desktop-session'")
         os.system("apt remove --assume-yes gnome-terminal")
         os.system("apt install --assume-yes xscreensaver")
+        os.system("sudo apt purge light-locker")
+        os.system("sudo apt install --reinstall xfce4-screensaver")
         os.system("systemctl disable lightdm.service")
         print("Installed XFCE4 Desktop Environment !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
