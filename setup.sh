@@ -1,10 +1,9 @@
 #!/bin/bash
 
-# Fetch values from environment variables set by Python
-CRD_SSH_Code=$CRD_SSH_Code
-username=$username
-password=$password
-Pin=$Pin
+# Load the values from the user_input.txt file
+source user_input.txt
+
+# Autostart is set to true
 Autostart=true
 
 # Function to install Chrome Remote Desktop
