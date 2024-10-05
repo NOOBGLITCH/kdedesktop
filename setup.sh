@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Prompt user for inputs
-read -p "Google CRD SSH Code: " CRD_SSH_Code
-username="user" # You can change the default username here
-password="root" # You can change the default password here
-Pin=123456 # You can change the default pin here
+# Fetch values from environment variables set by Python
+CRD_SSH_Code=$CRD_SSH_Code
+username=$username
+password=$password
+Pin=$Pin
 Autostart=true
 
 # Function to install Chrome Remote Desktop
