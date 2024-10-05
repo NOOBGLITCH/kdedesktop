@@ -1,19 +1,34 @@
 import os
 import subprocess
 import shutil
+import sys
 
 ############################################################################
-# Install colab-xterm
-subprocess.run(['pip', 'install', '-q', 'colab-xterm'])
+# Check if we're running in a notebook (Google Colab or Jupyter)
+def is_notebook():
+    try:
+        shell = get_ipython().__class__.__name__
+        if shell == 'ZMQInteractiveShell':  # Jupyter or Colab environment
+            return True
+        elif shell == 'TerminalInteractiveShell':  # IPython terminal
+            return False
+        else:
+            return False
+    except NameError:
+        return False  # Not in any IPython environment
 
-# Load colabxterm extension
-from google.colab import output
-output.enable_custom_widget_manager()
+if is_notebook():
+    # Only install colab-xterm if running inside a notebook
+    subprocess.run([sys.executable, '-m', 'pip', 'install', '-q', 'colab-xterm'])
 
-# Start the xterm terminal in Colab
-subprocess.run(['pip', 'install', 'colab-xterm'])
-from IPython.display import display, Javascript
-display(Javascript('google.colab.kernel.invokeFunction("xterm")'))
+    # Load the extension and start xterm
+    from google.colab import output
+    output.enable_custom_widget_manager()
+
+    from IPython.display import display, Javascript
+    display(Javascript('google.colab.kernel.invokeFunction("xterm")'))
+else:
+    print("This script must be run in a Jupyter or Colab environment.")
 #############################################################################
         
 CRD_SSH_Code = input("Google CRD SSH Code :")
