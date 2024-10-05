@@ -2,6 +2,9 @@ import os
 import subprocess
 import shutil
 
+subprocess.run(['pip', 'install', '-q', 'colab-xterm'])
+subprocess.run(['xterm'])
+        
 CRD_SSH_Code = input("Google CRD SSH Code :")
 username = "user" #@param {type:"string"}
 password = "root" #@param {type:"string"}
@@ -26,7 +29,6 @@ class CRDSetup:
 
     @staticmethod
     def installCRD():
-        subprocess.run(['pip', 'install', '-q', 'colab-xterm'])
         subprocess.run(['wget', 'https://dl.google.com/linux/direct/chrome-remote-desktop_current_amd64.deb'])
         subprocess.run(['dpkg', '--install', 'chrome-remote-desktop_current_amd64.deb'])
         subprocess.run(['apt', 'install', '--assume-yes', '--fix-broken'])
