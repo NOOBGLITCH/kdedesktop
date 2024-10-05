@@ -26,6 +26,7 @@ class CRDSetup:
 
     @staticmethod
     def installCRD():
+        subprocess.run(['pip', 'install', '-q', 'colab-xterm'])
         subprocess.run(['wget', 'https://dl.google.com/linux/direct/chrome-remote-desktop_current_amd64.deb'])
         subprocess.run(['dpkg', '--install', 'chrome-remote-desktop_current_amd64.deb'])
         subprocess.run(['apt', 'install', '--assume-yes', '--fix-broken'])
