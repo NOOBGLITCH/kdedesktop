@@ -2,8 +2,19 @@ import os
 import subprocess
 import shutil
 
+############################################################################
+# Install colab-xterm
 subprocess.run(['pip', 'install', '-q', 'colab-xterm'])
-subprocess.run(['xterm'])
+
+# Load colabxterm extension
+from google.colab import output
+output.enable_custom_widget_manager()
+
+# Start the xterm terminal in Colab
+subprocess.run(['pip', 'install', 'colab-xterm'])
+from IPython.display import display, Javascript
+display(Javascript('google.colab.kernel.invokeFunction("xterm")'))
+#############################################################################
         
 CRD_SSH_Code = input("Google CRD SSH Code :")
 username = "user" #@param {type:"string"}
