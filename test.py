@@ -4,11 +4,11 @@ import shutil
 
 ############################################################################
 # Install colab-xterm
-#subprocess.run(['pip', 'install', '-q', 'colab-xterm'])
+subprocess.run(['pip', 'install', '-q', 'colab-xterm'])
 
 # Load colabxterm extension
-#from google.colab import output
-#output.enable_custom_widget_manager()
+from google.colab import output
+output.enable_custom_widget_manager()
 
 # Start the xterm terminal in Colab
 subprocess.run(['pip', 'install', 'colab-xterm'])
