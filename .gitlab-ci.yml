@@ -1,28 +1,83 @@
 stages:
-  - setup
-  - configure
+  - deploy
 
-setup_wine:
-  stage: setup
-  image: ubuntu:22.04
-  script:
-    - "dpkg --add-architecture i386"
-    - "apt-get update -y"
-    - "apt-get install -y --no-install-recommends wine32 wine64 winbind xvfb cabextract unzip wget openssl"
-    - "wine --version"
-    - "xvfb-run wineboot --init"
-  artifacts:
-    paths:
-      - /usr/bin/wine
-      - /usr/lib
-      - /root/.wine
+# ------------------------
+# Variables (safe defaults)
+# ------------------------
+variables:
+  FILE_TO_UPLOAD: "my_app.exe"
+  WIN_DEST_PATH: "C:\\deploy\\my_app.exe"
 
-configure_litemanager:
-  stage: configure
-  image: ubuntu:22.04
-  dependencies:
-    - setup_wine
+# ========================
+# PowerShell Remoting path
+# Run when WIN_MODE="psremoting"
+# ========================
+psremoting_deploy:
+  stage: deploy
+  image: python:3.11
+  rules:
+    - if: '$WIN_MODE == "psremoting"'
+  before_script:
+    - python --version
+    - pip install pywinrm
   script:
-    - "xvfb-run wine --version"
-    - "wget -O ROMServer.exe https://litemanager.com/soft/ROMServer.exe"
-    - "xvfb-run wine ROMServer.exe /silent"
+    - |
+      set -euo pipefail
+      # optional: create a demo artifact if your job didn't build one
+      : > "$FILE_TO_UPLOAD" || true
+
+      # Upload file (if present) and/or run a command via WinRM
+      python3 - <<'PY'
+      import os, base64, pathlib, sys
+      import winrm
+
+      host = os.environ['WIN_HOST']
+      user = os.environ['WIN_USER']
+      pw   = os.environ['WIN_USER_PASS']
+      dest = os.environ.get('WIN_DEST_PATH', r"C:\deploy\my_app.exe")
+      to_upload = os.environ.get('FILE_TO_UPLOAD','')
+
+      s = winrm.Session(f"http://{host}:5985/wsman", auth=(user, pw))
+
+      if to_upload and pathlib.Path(to_upload).exists():
+          data = pathlib.Path(to_upload).read_bytes()
+          b64  = base64.b64encode(data).decode("ascii")
+          ps   = f"[IO.File]::WriteAllBytes('{dest}', [Convert]::FromBase64String('{b64}'))"
+          s.run_ps(ps)
+          r = s.run_cmd(f'cmd /c "{dest}"')
+          sys.stdout.write(r.std_out.decode())
+          sys.stderr.write(r.std_err.decode())
+      else:
+          r = s.run_cmd('cmd /c dir C:\\')
+          sys.stdout.write(r.std_out.decode())
+      PY
+
+# =========================
+# LiteManager path (Wine)
+# Run when WIN_MODE="lite"
+# =========================
+litemanager_deploy:
+  stage: deploy
+  image: ubuntu:22.04
+  rules:
+    - if: '$WIN_MODE == "lite"'
+  before_script:
+    - apt-get update -y
+    - DEBIAN_FRONTEND=noninteractive apt-get install -y wget unzip smbclient wine64
+    - wget -q https://litemanager.com/soft/litemanager_amd64.zip -O litemanager.zip
+    - unzip -o litemanager.zip -d litemanager
+  script:
+    - |
+      set -euo pipefail
+      : > "$FILE_TO_UPLOAD" || true  # demo payload if you didn't build one
+
+      # SMB upload (needs WIN_HOST/WIN_USER/WIN_USER_PASS)
+      SMB_CRED="${WIN_USER}%${WIN_USER_PASS}"
+      smbclient "//${WIN_HOST}/C$" -U "$SMB_CRED" -c "mkdir deploy; put $FILE_TO_UPLOAD deploy\\$(basename "$FILE_TO_UPLOAD")"
+
+      # Run it via LiteManager (headless)
+      wine litemanager/ROMViewer.exe \
+        -id:"$WIN_ID" \
+        -pass:"$WIN_PASS" \
+        -run:"C:\\deploy\\$(basename "$FILE_TO_UPLOAD")" \
+        /silent
