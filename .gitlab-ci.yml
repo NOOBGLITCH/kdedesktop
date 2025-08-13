@@ -12,19 +12,8 @@ debug_gitlab_vars:
     - |
       cat >/tmp/var_scope_debug.ps1 <<'PS1'
       Write-Host "--- GitLab Variable Scope Debug ---"
-      Write-Host "Project: $env:CI_PROJECT_NAME"
-      Write-Host "Branch:  $env:CI_COMMIT_BRANCH"
-      Write-Host "Default Branch: $env:CI_DEFAULT_BRANCH"
-      Write-Host "Pipeline Source: $env:CI_PIPELINE_SOURCE"
-      Write-Host "Protected Branch? " -NoNewline
-      if ($env:CI_COMMIT_REF_PROTECTED -eq "true") {
-        Write-Host "✅ Yes"
-      }
-      else {
-        Write-Host "❌ No"
-      }
-
       $missing = @()
+
       function Check-Var($name) {
         $val = (Get-Item -Path Env:$name -ErrorAction SilentlyContinue).Value
         if ([string]::IsNullOrEmpty($val)) {
@@ -53,20 +42,36 @@ connect_windows:
   stage: connect
   image: $POWERSHELL_IMAGE
   script:
+    # Install OpenSSH client & netcat for SSH connectivity check
+    - apt-get update -y && apt-get install -y openssh-client netcat-openbsd
+
+    # Test SSH port availability
+    - echo "Checking SSH connectivity to $WINDOWS_HOST:22..."
+    - if ! nc -z -w5 "$WINDOWS_HOST" 22; then
+        echo "❌ SSH port 22 is not reachable on $WINDOWS_HOST";
+        exit 1;
+      fi
+    - echo "✅ SSH port is open, proceeding to PowerShell remoting"
+
+    # Create PowerShell script for SSH-based remoting
     - |
       cat >/tmp/connect_windows.ps1 <<'PS1'
       $secpass = ConvertTo-SecureString $env:WINDOWS_PASS -AsPlainText -Force
       $cred    = New-Object System.Management.Automation.PSCredential ($env:WINDOWS_USER, $secpass)
 
-      Write-Host "Attempting to connect to $env:WINDOWS_HOST as $env:WINDOWS_USER ..."
+      Write-Host "Attempting SSH-based PowerShell remoting to $env:WINDOWS_HOST ..."
       try {
-        Invoke-Command -ComputerName $env:WINDOWS_HOST -Credential $cred -ScriptBlock { whoami }
+        $session = New-PSSession -HostName $env:WINDOWS_HOST -UserName $env:WINDOWS_USER -SSHTransport
+        Invoke-Command -Session $session -ScriptBlock { whoami }
+        Remove-PSSession $session
       }
       catch {
-        Write-Error "Remote connection failed: $($_.Exception.Message)"
+        Write-Error "❌ SSH connection failed: $($_.Exception.Message)"
         exit 1
       }
       PS1
+
+    # Execute PowerShell connection
     - pwsh -NoLogo -NonInteractive -File /tmp/connect_windows.ps1
   needs:
     - job: debug_gitlab_vars
