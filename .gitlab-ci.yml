@@ -3,12 +3,8 @@ stages:
 
 build_litemanager:
   stage: build
-  
-  image: mcr.microsoft.com/dotnet/framework/sdk:4.8-windowsservercore-ltsc2019
-  variables:
-    GIT_STRATEGY: clone
-  before_script:
-    - echo "Restoring NuGet packages..."
+  tags:
+    - windows
   script:
     - git clone https://github.com/RavikantAsoliya/LiteManager.git
     - cd LiteManager
@@ -17,3 +13,4 @@ build_litemanager:
   artifacts:
     paths:
       - LiteManager/bin/Release/
+
