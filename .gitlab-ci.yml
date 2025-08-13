@@ -17,4 +17,4 @@ stages:
 setup-crd:
   stage: setup
   script:
-    - python3 setup_crd.py
+    - python3 run.py
