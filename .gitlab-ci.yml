@@ -3,7 +3,6 @@ stages:
   - debug
   - remote
 
-# Stage 0: dump env vars to verify runner receives them
 list_env:
   stage: env
   image: mcr.microsoft.com/powershell:latest
@@ -18,7 +17,6 @@ list_env:
       PS1
     - pwsh -NoLogo -NonInteractive -File /tmp/list_env.ps1
 
-# Stage 1: check secret variables without exposing them
 debug_vars:
   stage: debug
   image: mcr.microsoft.com/powershell:latest
@@ -43,7 +41,6 @@ debug_vars:
       PS1
     - pwsh -NoLogo -NonInteractive -File /tmp/debug_vars.ps1
 
-# Stage 2: connect to Windows via WinRM
 connect_windows:
   stage: remote
   image: mcr.microsoft.com/powershell:latest
@@ -54,17 +51,17 @@ connect_windows:
       Set-StrictMode -Version Latest
 
       foreach ($k in 'WINDOWS_USER','WINDOWS_PASS','WINDOWS_HOST') {
-        if ([string]::IsNullOrEmpty($env:$k)) {
+        if ([string]::IsNullOrEmpty(${env:$k})) {
           Write-Error "Missing required variable: $k"
           exit 1
         }
       }
 
       Write-Host "--- Starting remote Windows connection ---"
-      $secpass = ConvertTo-SecureString $env:WINDOWS_PASS -AsPlainText -Force
-      $cred    = New-Object System.Management.Automation.PSCredential ($env:WINDOWS_USER, $secpass)
+      $secpass = ConvertTo-SecureString ${env:WINDOWS_PASS} -AsPlainText -Force
+      $cred    = New-Object System.Management.Automation.PSCredential (${env:WINDOWS_USER}, $secpass)
 
-      Invoke-Command -ComputerName $env:WINDOWS_HOST -Credential $cred -ScriptBlock {
+      Invoke-Command -ComputerName ${env:WINDOWS_HOST} -Credential $cred -ScriptBlock {
         Write-Host ("Connected to " + $env:COMPUTERNAME)
         whoami
       }
