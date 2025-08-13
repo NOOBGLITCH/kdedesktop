@@ -97,16 +97,35 @@ X-GNOME-Autostart-enabled=true
             os.system(f"chown {user}:{user} /home/{user}/.config")
 
         os.system(f"adduser {user} chrome-remote-desktop")
-        command = f"{CRD_SSH_Code} --pin={Pin}"
-        os.system(f"su - {user} -c '{command}'")
-        os.system("service chrome-remote-desktop start")
 
-        print("Setup Complete!")
-        print(f"Log in PIN: {Pin}")
-        print(f"User Name: {username}")
-        print(f"User Pass: {password}")
-        while True:
-            pass
+        # Create persistent systemd service
+        service_content = f"""[Unit]
+Description=Chrome Remote Desktop service for {user}
+After=network.target
+
+[Service]
+User={user}
+ExecStart=/opt/google/chrome-remote-desktop/start-host --code="{CRD_SSH_Code}" --redirect-url="https://remotedesktop.google.com/_/oauthredirect" --name=$(hostname) --pin={Pin}
+Restart=always
+Environment=DISPLAY=:20
+Environment=CHROME_REMOTE_DESKTOP_DEFAULT_DESKTOP_SIZES=1920x1080
+
+[Install]
+WantedBy=multi-user.target
+"""
+        with open(f"/etc/systemd/system/crd-{user}.service", "w") as f:
+            f.write(service_content)
+
+        os.system("systemctl daemon-reload")
+        os.system(f"systemctl enable crd-{user}.service")
+        os.system(f"systemctl start crd-{user}.service")
+
+        print("===========================================================")
+        print(" Chrome Remote Desktop persistent service installed! ")
+        print("===========================================================")
+        print(f"Log in PIN : {Pin}")
+        print(f"User Name  : {username}")
+        print(f"User Pass  : {password}")
 
 # ====== Run setup ======
 CRDSetup(username)
