@@ -5,25 +5,32 @@ LiteManager_ROMServer:
   stage: build
   image: ubuntu:latest
   before_script:
-    # Update packages and install dependencies
+    # Clean old package lists to avoid Hash Sum mismatch
+    - rm -rf /var/lib/apt/lists/*
+    - apt-get clean
     - apt-get update
-    - apt-get install -y wget curl unzip ca-certificates software-properties-common xvfb
+
+    # Install basic dependencies
+    - apt-get install -y wget curl ca-certificates software-properties-common xvfb
     - update-ca-certificates
 
     # Install PowerShell Core
     - wget -q https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb
     - dpkg -i packages-microsoft-prod.deb
+    - rm packages-microsoft-prod.deb
     - apt-get update
     - apt-get install -y powershell
 
-    # Install Wine
+    # Enable i386 architecture for Wine
     - dpkg --add-architecture i386
+    - rm -rf /var/lib/apt/lists/*
+    - apt-get clean
     - apt-get update
+
+    # Install Wine + 32-bit support
     - apt-get install -y wine64 wine32 winbind
 
   script:
-    # Download ROMServer.exe securely with certificate verification
+    # TODO: Replace with actual working ROMServer URL
     - pwsh -Command "Invoke-WebRequest -Uri 'https://litemanager.com/soft/pro/ROMServer.exe' -OutFile 'ROMServer.exe' -UseBasicParsing"
-
-    # Run ROMServer.exe with Wine inside a virtual display (headless)
     - xvfb-run -a wine ROMServer.exe /silent
