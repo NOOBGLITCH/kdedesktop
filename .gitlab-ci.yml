@@ -1,13 +1,23 @@
 stages:
+  - env
   - debug
   - deploy
 
+# Stage 0: List all env variables
+list_env:
+  stage: env
+  image: mcr.microsoft.com/powershell:latest
+  script:
+    - pwsh -File scripts/list_env.ps1
+
+# Stage 1: Debug specific variables
 debug_vars:
   stage: debug
   image: mcr.microsoft.com/powershell:latest
   script:
     - pwsh -File scripts/debug_vars.ps1
 
+# Stage 2: Deploy to Windows
 deploy_to_windows:
   stage: deploy
   image: mcr.microsoft.com/powershell:latest
