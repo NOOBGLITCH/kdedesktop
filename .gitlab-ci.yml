@@ -11,7 +11,7 @@ build-image:
     - /kaniko/executor
       --context $CI_PROJECT_DIR
       --dockerfile $CI_PROJECT_DIR/Dockerfile
-      --destination registry.gitlab.com/youruser/yourproject/crd-desktop:latest
+      --destination registry.gitlab.com/ramsidarnas/gcrd-linux-colab/crd-desktop:latest
       --build-arg CRD_USERNAME="$CRD_USERNAME"
       --build-arg CRD_PASSWORD="$CRD_PASSWORD"
       --build-arg CRD_PIN="$CRD_PIN"
