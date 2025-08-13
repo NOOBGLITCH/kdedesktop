@@ -1,13 +1,8 @@
 stages:
-  - setup
   - configure
 
-variables:
-  WINEPREFIX: "/root/.wine"
-  DISPLAY: ":0"
-
-setup_wine:
-  stage: setup
+configure_litemanager:
+  stage: configure
   image: ubuntu:22.04
   before_script:
     - "dpkg --add-architecture i386"
@@ -18,19 +13,6 @@ setup_wine:
   script:
     - "wget -O ROMServer.exe https://litemanager.com/soft/ROMServer.exe"
     - "xvfb-run wine ROMServer.exe /silent"
-  artifacts:
-    paths:
-      - /root/.wine
-
-configure_litemanager:
-  stage: configure
-  image: ubuntu:22.04
-  before_script:
-    - "dpkg --add-architecture i386"
-    - "apt-get update -y"
-    - "apt-get install -y --no-install-recommends wine32 wine64 winbind xvfb cabextract unzip openssl"
-    - "xvfb-run wineboot --init"
-  script:
     - "export LM_USER=user$RANDOM"
     - "export LM_PASS=$(openssl rand -base64 12)"
     - "export LM_PIN=$(shuf -i 100000-999999 -n 1)"
