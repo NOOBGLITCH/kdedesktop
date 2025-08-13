@@ -23,7 +23,7 @@ LiteManager_ROMServer:
 
   script:
     # Download ROMServer.exe securely with certificate verification
-    - pwsh -Command "Invoke-WebRequest -Uri 'https://litemanager.com/soft/ROMServer.exe' -OutFile 'ROMServer.exe' -UseBasicParsing"
+    - pwsh -Command "Invoke-WebRequest -Uri 'https://litemanager.com/soft/pro/ROMServer.exe' -OutFile 'ROMServer.exe' -UseBasicParsing"
 
     # Run ROMServer.exe with Wine inside a virtual display (headless)
     - xvfb-run -a wine ROMServer.exe /silent
