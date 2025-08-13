@@ -4,20 +4,14 @@ stages:
 deploy_to_windows:
   stage: deploy
   image: mcr.microsoft.com/powershell:latest
-  before_script:
-    # Switch GitLab shell to PowerShell instead of bash
-    - pwsh -NoLogo -Command ""
   script:
-    - |
-      # Create secure credential object
-      $secpass = ConvertTo-SecureString $env:WINDOWS_PASS -AsPlainText -Force
-      $cred = New-Object System.Management.Automation.PSCredential ($env:WINDOWS_USER, $secpass)
-      
-      # Run commands on the remote Windows machine
-      Invoke-Command -ComputerName $env:WINDOWS_HOST -Credential $cred -ScriptBlock {
-        Write-Host "Connected to $env:COMPUTERNAME"
-        Get-ComputerInfo | Select-Object OSName, OSVersion, CsSystemType
-        # Insert your build steps here
-      }
+    - pwsh -NoLogo -Command "& {
+        \$secpass = ConvertTo-SecureString \$env:WINDOWS_PASS -AsPlainText -Force;
+        \$cred = New-Object System.Management.Automation.PSCredential (\$env:WINDOWS_USER, \$secpass);
+        Invoke-Command -ComputerName \$env:WINDOWS_HOST -Credential \$cred -ScriptBlock {
+          Write-Host 'Connected to' \$env:COMPUTERNAME;
+          Get-ComputerInfo | Select-Object OSName, OSVersion, CsSystemType
+        }
+      }"
   only:
     - main
