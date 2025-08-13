@@ -10,16 +10,14 @@ setup_wine:
   stage: setup
   image: ubuntu:22.04
   before_script:
-    - dpkg --add-architecture i386
-    - apt-get update -y
-    - apt-get install -y --no-install-recommends wine32 wine64 winbind xvfb cabextract unzip wget
-    - wine --version
-    - xvfb-run wineboot --init
+    - "dpkg --add-architecture i386"
+    - "apt-get update -y"
+    - "apt-get install -y --no-install-recommends wine32 wine64 winbind xvfb cabextract unzip wget openssl"
+    - "wine --version"
+    - "xvfb-run wineboot --init"
   script:
-    # Download LiteManager Server
-    - wget -O ROMServer.exe https://litemanager.com/soft/ROMServer.exe
-    # Install silently
-    - xvfb-run wine ROMServer.exe /silent
+    - "wget -O ROMServer.exe https://litemanager.com/soft/ROMServer.exe"
+    - "xvfb-run wine ROMServer.exe /silent"
   artifacts:
     paths:
       - /root/.wine
@@ -28,16 +26,17 @@ configure_litemanager:
   stage: configure
   image: ubuntu:22.04
   before_script:
-    - dpkg --add-architecture i386
-    - apt-get update -y
-    - apt-get install -y --no-install-recommends wine32 wine64 winbind xvfb cabextract unzip
-    - xvfb-run wineboot --init
+    - "dpkg --add-architecture i386"
+    - "apt-get update -y"
+    - "apt-get install -y --no-install-recommends wine32 wine64 winbind xvfb cabextract unzip openssl"
+    - "xvfb-run wineboot --init"
   script:
-    # Generate random username, password, PIN
-    - export LM_USER="user$RANDOM"
-    - export LM_PASS=$(openssl rand -base64 12)
-    - export LM_PIN=$(shuf -i 100000-999999 -n 1)
-    # Here you'd edit LiteManager's registry/config with these creds
-    - echo "Username: $LM_USER"
-    - echo "Password: $LM_PASS"
-    - echo "PIN: $LM_PIN"
+    - "export LM_USER=user$RANDOM"
+    - "export LM_PASS=$(openssl rand -base64 12)"
+    - "export LM_PIN=$(shuf -i 100000-999999 -n 1)"
+    - "xvfb-run wine reg add 'HKLM\\SOFTWARE\\LiteManager' /v 'UserName' /t REG_SZ /d \"$LM_USER\" /f"
+    - "xvfb-run wine reg add 'HKLM\\SOFTWARE\\LiteManager' /v 'Password' /t REG_SZ /d \"$LM_PASS\" /f"
+    - "xvfb-run wine reg add 'HKLM\\SOFTWARE\\LiteManager' /v 'PIN' /t REG_SZ /d \"$LM_PIN\" /f"
+    - "echo \"LiteManager Username: $LM_USER\""
+    - "echo \"LiteManager Password: $LM_PASS\""
+    - "echo \"LiteManager PIN: $LM_PIN\""
