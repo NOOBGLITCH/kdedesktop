@@ -3,8 +3,7 @@ stages:
 
 build_litemanager:
   stage: build
-  tags:
-    - windows
+
   script:
     - git clone https://github.com/RavikantAsoliya/LiteManager.git
     - cd LiteManager
