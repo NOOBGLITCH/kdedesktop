@@ -2,32 +2,36 @@ stages:
   - debug
   - deploy
 
-# Stage 1: Debug variables
 debug_vars:
   stage: debug
   image: mcr.microsoft.com/powershell:latest
   script:
-    - pwsh -NoLogo -Command @'
-        Write-Host '--- Checking GitLab variables ---'
-        Write-Host ('WINDOWS_USER: ' + $env:WINDOWS_USER)
-        Write-Host ('WINDOWS_HOST: ' + $env:WINDOWS_HOST)
+    - |
+      pwsh -NoLogo -Command @'
+        Write-Host "--- Checking GitLab variables ---"
+        Write-Host ("WINDOWS_USER: " + $env:WINDOWS_USER)
+        Write-Host ("WINDOWS_HOST: " + $env:WINDOWS_HOST)
 
         if (-not $env:WINDOWS_PASS) {
-          Write-Host 'WINDOWS_PASS is EMPTY!'
+          Write-Host "WINDOWS_PASS is EMPTY!"
         } else {
-          Write-Host 'WINDOWS_PASS is SET (masked)'
+          Write-Host "WINDOWS_PASS is SET (masked)"
         }
-'@
+      '@
 
-# Stage 2: Deploy to Windows
 deploy_to_windows:
   stage: deploy
   image: mcr.microsoft.com/powershell:latest
   script:
-    - pwsh -NoLogo -Command @'
-        Write-Host '--- Starting remote Windows connection ---'
+    - |
+      pwsh -NoLogo -Command @'
+        Write-Host "--- Starting remote Windows connection ---"
         $secpass = ConvertTo-SecureString $env:WINDOWS_PASS -AsPlainText -Force
         $cred = New-Object System.Management.Automation.PSCredential ($env:WINDOWS_USER, $secpass)
         Invoke-Command -ComputerName $env:WINDOWS_HOST -Credential $cred -ScriptBlock {
-          Write-Host ('Connected to ' + $env:COMPUTERNAME)
-          Get-ComputerInfo | Select-Object OSName, OSVersion, CsSystemT
+          Write-Host ("Connected to " + $env:COMPUTERNAME)
+          Get-ComputerInfo | Select-Object OSName, OSVersion, CsSystemType
+        }
+      '@
+  only:
+    - main
