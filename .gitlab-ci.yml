@@ -3,8 +3,7 @@ stages:
 
 build_litemanager:
   stage: build
-  tags:
-    - windows
+  
   image: mcr.microsoft.com/dotnet/framework/sdk:4.8-windowsservercore-ltsc2019
   variables:
     GIT_STRATEGY: clone
