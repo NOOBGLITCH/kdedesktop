@@ -1,0 +1,20 @@
+image: ubuntu:20.04
+
+variables:
+  DEBIAN_FRONTEND: noninteractive
+  CRD_SSH_CODE: "<your-auth-code-here>"
+  CRD_USERNAME: "user"
+  CRD_PASSWORD: "root"
+  CRD_PIN: "123456"
+  CRD_AUTOSTART: "true"
+
+before_script:
+  - apt update && apt install -y python3 python3-pip sudo curl wget
+
+stages:
+  - setup
+
+setup-crd:
+  stage: setup
+  script:
+    - python3 setup_crd.py
