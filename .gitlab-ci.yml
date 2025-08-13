@@ -1,31 +1,18 @@
 stages:
   - build
 
-variables:
-  DOCKER_IMAGE: "$CI_REGISTRY_IMAGE/crd-desktop"
-  DOCKER_TAG: "latest"
-
-build-and-push:
+build-image:
   stage: build
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
   script:
-    # Auth for GitLab Container Registry
-    - mkdir -p /kaniko/.docker
-    - |
-      cat > /kaniko/.docker/config.json <<EOF
-      {"auths":{"$CI_REGISTRY":{"username":"$CI_REGISTRY_USER","password":"$CI_REGISTRY_PASSWORD"}}}
-      EOF
-
-    # Build & push (we DO NOT bake CRD_SSH_CODE at build time; pass it at runtime)
+    - echo "{\"auths\":{\"registry.gitlab.com\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
     - /kaniko/executor
-        --context "${CI_PROJECT_DIR}"
-        --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
-        --destination "${DOCKER_IMAGE}:${DOCKER_TAG}"
-        --build-arg CRD_USERNAME="$CRD_USERNAME"
-        --build-arg CRD_PASSWORD="$CRD_PASSWORD"
-        --build-arg CRD_PIN="$CRD_PIN"
-        --build-arg DEBIAN_FRONTEND=noninteractive
-  only:
-    - main
+      --context $CI_PROJECT_DIR
+      --dockerfile $CI_PROJECT_DIR/Dockerfile
+      --destination registry.gitlab.com/youruser/yourproject/crd-desktop:latest
+      --build-arg CRD_USERNAME="$CRD_USERNAME"
+      --build-arg CRD_PASSWORD="$CRD_PASSWORD"
+      --build-arg CRD_PIN="$CRD_PIN"
+      --build-arg CRD_SSH_CODE="$CRD_SSH_CODE"
