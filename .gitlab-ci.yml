@@ -1,18 +1,19 @@
 stages:
-  - build
+  - deploy
 
-build-image:
-  stage: build
-  image:
-    name: gcr.io/kaniko-project/executor:debug
-    entrypoint: [""]
+deploy_to_windows:
+  stage: deploy
+  image: mcr.microsoft.com/powershell:latest
   script:
-    - echo "{\"auths\":{\"registry.gitlab.com\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
-    - /kaniko/executor
-      --context $CI_PROJECT_DIR
-      --dockerfile $CI_PROJECT_DIR/Dockerfile
-      --destination registry.gitlab.com/ramsidarnas/gcrd-linux-colab/crd-desktop:latest
-      --build-arg CRD_USERNAME="$CRD_USERNAME"
-      --build-arg CRD_PASSWORD="$CRD_PASSWORD"
-      --build-arg CRD_PIN="$CRD_PIN"
-      --build-arg CRD_SSH_CODE="$CRD_SSH_CODE"
+    # Create a secure credential object
+    - |
+      $secpass = ConvertTo-SecureString $env:WINDOWS_PASS -AsPlainText -Force
+      $cred = New-Object System.Management.Automation.PSCredential ($env:WINDOWS_USER, $secpass)
+      Invoke-Command -ComputerName $env:WINDOWS_HOST -Credential $cred -ScriptBlock {
+        Write-Host "Connected to $env:COMPUTERNAME"
+        # Example build steps
+        Get-ComputerInfo | Select-Object OSName, OSVersion, CsSystemType
+        # Run your build script here
+      }
+  only:
+    - main
