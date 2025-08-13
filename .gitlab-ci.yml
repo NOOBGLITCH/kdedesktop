@@ -4,6 +4,7 @@ stages:
 
 variables:
   POWERSHELL_IMAGE: "mcr.microsoft.com/powershell:latest"
+  SSH_PORT: "2222"  # change this to match your router/Windows config
 
 debug_gitlab_vars:
   stage: debug
@@ -42,26 +43,33 @@ connect_windows:
   stage: connect
   image: $POWERSHELL_IMAGE
   script:
-    # Install OpenSSH client & netcat for SSH connectivity check
-    - apt-get update -y && apt-get install -y openssh-client netcat-openbsd
-
-    # Test SSH port availability
-    - echo "Checking SSH connectivity to $WINDOWS_HOST:22..."
-    - if ! nc -z -w5 "$WINDOWS_HOST" 22; then
-        echo "❌ SSH port 22 is not reachable on $WINDOWS_HOST";
-        exit 1;
-      fi
-    - echo "✅ SSH port is open, proceeding to PowerShell remoting"
-
-    # Create PowerShell script for SSH-based remoting
     - |
+      # Install netcat + OpenSSH client in the container
+      apt-get update -y && apt-get install -y netcat-openbsd openssh-client
+
+      echo "Checking SSH connectivity to $WINDOWS_HOST:$SSH_PORT with retries..."
+
+      for i in $(seq 1 24); do
+        if nc -z -w3 "$WINDOWS_HOST" "$SSH_PORT"; then
+          echo "✅ SSH port $SSH_PORT is reachable!"
+          break
+        fi
+        echo "⏳ Attempt $i: SSH port not reachable yet, retrying in 5s..."
+        sleep 5
+      done
+
+      if ! nc -z -w3 "$WINDOWS_HOST" "$SSH_PORT"; then
+        echo "❌ Could not reach $WINDOWS_HOST:$SSH_PORT after retries"
+        exit 1
+      fi
+
       cat >/tmp/connect_windows.ps1 <<'PS1'
       $secpass = ConvertTo-SecureString $env:WINDOWS_PASS -AsPlainText -Force
       $cred    = New-Object System.Management.Automation.PSCredential ($env:WINDOWS_USER, $secpass)
 
-      Write-Host "Attempting SSH-based PowerShell remoting to $env:WINDOWS_HOST ..."
+      Write-Host "Attempting SSH-based PowerShell remoting to $env:WINDOWS_HOST on port $env:SSH_PORT ..."
       try {
-        $session = New-PSSession -HostName $env:WINDOWS_HOST -UserName $env:WINDOWS_USER -SSHTransport
+        $session = New-PSSession -HostName $env:WINDOWS_HOST -Port $env:SSH_PORT -UserName $env:WINDOWS_USER -SSHTransport
         Invoke-Command -Session $session -ScriptBlock { whoami }
         Remove-PSSession $session
       }
@@ -70,8 +78,6 @@ connect_windows:
         exit 1
       }
       PS1
-
-    # Execute PowerShell connection
     - pwsh -NoLogo -NonInteractive -File /tmp/connect_windows.ps1
   needs:
     - job: debug_gitlab_vars
