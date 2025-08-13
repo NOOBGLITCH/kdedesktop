@@ -1,10 +1,10 @@
 stages:
   - setup
-  - run
+  - configure
 
 variables:
   WINEPREFIX: "/root/.wine"
-  DISPLAY: ":0"  # headless mode
+  DISPLAY: ":0"
 
 setup_wine:
   stage: setup
@@ -12,18 +12,20 @@ setup_wine:
   before_script:
     - dpkg --add-architecture i386
     - apt-get update -y
-    - apt-get install -y --no-install-recommends wine32 wine64 winbind xvfb cabextract unzip
+    - apt-get install -y --no-install-recommends wine32 wine64 winbind xvfb cabextract unzip wget
     - wine --version
-    # Optional: initialize Wine prefix to avoid first-run prompts
     - xvfb-run wineboot --init
   script:
-    - echo "✅ Wine setup complete"
+    # Download LiteManager Server
+    - wget -O ROMServer.exe https://litemanager.com/soft/ROMServer.exe
+    # Install silently
+    - xvfb-run wine ROMServer.exe /silent
   artifacts:
     paths:
       - /root/.wine
 
-run_windows_app:
-  stage: run
+configure_litemanager:
+  stage: configure
   image: ubuntu:22.04
   before_script:
     - dpkg --add-architecture i386
@@ -31,8 +33,11 @@ run_windows_app:
     - apt-get install -y --no-install-recommends wine32 wine64 winbind xvfb cabextract unzip
     - xvfb-run wineboot --init
   script:
-    - echo "WINDOWS_USER=$WINDOWS_USER"
-    - echo "WINDOWS_PASS=$WINDOWS_PASS"
-    # Example: Download and run a Windows program
-    - wget -O testapp.exe https://example.com/some-windows-tool.exe
-    - xvfb-run wine testapp.exe
+    # Generate random username, password, PIN
+    - export LM_USER="user$RANDOM"
+    - export LM_PASS=$(openssl rand -base64 12)
+    - export LM_PIN=$(shuf -i 100000-999999 -n 1)
+    # Here you'd edit LiteManager's registry/config with these creds
+    - echo "Username: $LM_USER"
+    - echo "Password: $LM_PASS"
+    - echo "PIN: $LM_PIN"
