@@ -1,27 +1,69 @@
 stages:
+  - env
   - debug
   - remote
 
-variables:
-  # Optional: This will be visible to scripts, but secure values must be in GitLab UI/API
-  POWERSHELL_TELEMETRY_OPTOUT: "1"
+# Stage 0: dump every env var the runner sees (to confirm your CI variables are present)
+list_env:
+  stage: env
+  image: mcr.microsoft.com/powershell:latest
+  script:
+    - |
+      cat >/tmp/list_env.ps1 <<'PS1'
+      Write-Host "--- Listing all environment variables ---"
+      Get-ChildItem Env: | Sort-Object Name | ForEach-Object {
+        Write-Host "$($_.Name) = $($_.Value)"
+      }
+      Write-Host "--- End of environment variable list ---"
+      PS1
+    - pwsh -NoLogo -NonInteractive -File /tmp/list_env.ps1
 
+# Stage 1: show only the three variables we care about
 debug_vars:
   stage: debug
   image: mcr.microsoft.com/powershell:latest
   script:
-    - echo "=== Debugging Environment Variables ==="
-    - pwsh -NoLogo -Command "Write-Host ('WINDOWS_USER: ' + $env:WINDOWS_USER)"
-    - pwsh -NoLogo -Command "Write-Host ('WINDOWS_HOST: ' + $env:WINDOWS_HOST)"
-    - pwsh -NoLogo -Command "Write-Host 'WINDOWS_PASS is set: ' + [string]::IsNullOrEmpty($env:WINDOWS_PASS)"
+    - |
+      cat >/tmp/debug_vars.ps1 <<'PS1'
+      Write-Host "--- Checking GitLab variables ---"
+      Write-Host ("WINDOWS_USER: " + $env:WINDOWS_USER)
+      Write-Host ("WINDOWS_HOST: " + $env:WINDOWS_HOST)
+      if ([string]::IsNullOrEmpty($env:WINDOWS_PASS)) {
+        Write-Host "WINDOWS_PASS is EMPTY!"
+      } else {
+        Write-Host "WINDOWS_PASS is SET (masked)"
+      }
+      PS1
+    - pwsh -NoLogo -NonInteractive -File /tmp/debug_vars.ps1
 
+# Stage 2: connect to Windows via WinRM and run simple commands
 connect_windows:
   stage: remote
   image: mcr.microsoft.com/powershell:latest
   script:
-    - echo "=== Attempting Remote Connection ==="
-    # Create a secure password object
-    - pwsh -NoLogo -Command "$secpass = ConvertTo-SecureString $env:WINDOWS_PASS -AsPlainText -Force; \
-      $cred = New-Object System.Management.Automation.PSCredential ($env:WINDOWS_USER, $secpass); \
-      Write-Host 'Credential object created'; \
-      Invoke-Command -ComputerName $env:WINDOWS_HOST -Credential $cred -ScriptBlock { hostname; whoami }"
+    - |
+      cat >/tmp/connect_windows.ps1 <<'PS1'
+      $ErrorActionPreference = 'Stop'
+      Set-StrictMode -Version Latest
+
+      # Fail fast if required vars are missing
+      foreach ($k in 'WINDOWS_USER','WINDOWS_PASS','WINDOWS_HOST') {
+        if ([string]::IsNullOrEmpty($env:$k)) {
+          Write-Error "Missing required variable: $k"
+          exit 1
+        }
+      }
+
+      Write-Host "--- Starting remote Windows connection ---"
+      $secpass = ConvertTo-SecureString $env:WINDOWS_PASS -AsPlainText -Force
+      $cred    = New-Object System.Management.Automation.PSCredential ($env:WINDOWS_USER, $secpass)
+
+      # NOTE: Requires WinRM enabled + reachable from runner
+      Invoke-Command -ComputerName $env:WINDOWS_HOST -Credential $cred -ScriptBlock {
+        Write-Host ("Connected to " + $env:COMPUTERNAME)
+        whoami
+      }
+      PS1
+    - pwsh -NoLogo -NonInteractive -File /tmp/connect_windows.ps1
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
