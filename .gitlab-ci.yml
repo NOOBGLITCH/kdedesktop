@@ -3,13 +3,17 @@ stages:
 
 build_litemanager:
   stage: build
-
+  tags:
+    - windows   # Make sure your runner has this tag
   script:
+    - echo "Cloning LiteManager repository..."
     - git clone https://github.com/RavikantAsoliya/LiteManager.git
     - cd LiteManager
-    - nuget restore LiteManager.sln
+    - echo "Restoring NuGet packages via MSBuild..."
+    - msbuild LiteManager.sln /t:Restore
+    - echo "Building LiteManager..."
     - msbuild LiteManager.sln /p:Configuration=Release /p:Platform="Any CPU"
   artifacts:
     paths:
       - LiteManager/bin/Release/
-
+    expire_in: 7 days
