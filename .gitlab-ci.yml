@@ -1,84 +1,38 @@
 stages:
-  - debug
-  - connect
+  - setup
+  - run
 
 variables:
-  POWERSHELL_IMAGE: "mcr.microsoft.com/powershell:latest"
-  SSH_PORT: "2222"  # change this to match your router/Windows config
+  WINEPREFIX: "/root/.wine"
+  DISPLAY: ":0"  # headless mode
 
-debug_gitlab_vars:
-  stage: debug
-  image: $POWERSHELL_IMAGE
+setup_wine:
+  stage: setup
+  image: ubuntu:22.04
+  before_script:
+    - dpkg --add-architecture i386
+    - apt-get update -y
+    - apt-get install -y --no-install-recommends wine32 wine64 winbind xvfb cabextract unzip
+    - wine --version
+    # Optional: initialize Wine prefix to avoid first-run prompts
+    - xvfb-run wineboot --init
   script:
-    - |
-      cat >/tmp/var_scope_debug.ps1 <<'PS1'
-      Write-Host "--- GitLab Variable Scope Debug ---"
-      $missing = @()
+    - echo "✅ Wine setup complete"
+  artifacts:
+    paths:
+      - /root/.wine
 
-      function Check-Var($name) {
-        $val = (Get-Item -Path Env:$name -ErrorAction SilentlyContinue).Value
-        if ([string]::IsNullOrEmpty($val)) {
-          Write-Host "$name = <EMPTY>"
-          $missing += $name
-        }
-        else {
-          Write-Host "$name = <MASKED: length $($val.Length)>"
-        }
-      }
-
-      Check-Var "WINDOWS_USER"
-      Check-Var "WINDOWS_PASS"
-      Check-Var "WINDOWS_HOST"
-
-      if ($missing.Count -gt 0) {
-        Write-Error "❌ Missing required variables: $($missing -join ', ')"
-        exit 1
-      }
-
-      Write-Host "--- All required variables are present ---"
-      PS1
-    - pwsh -NoLogo -NonInteractive -File /tmp/var_scope_debug.ps1
-
-connect_windows:
-  stage: connect
-  image: $POWERSHELL_IMAGE
+run_windows_app:
+  stage: run
+  image: ubuntu:22.04
+  before_script:
+    - dpkg --add-architecture i386
+    - apt-get update -y
+    - apt-get install -y --no-install-recommends wine32 wine64 winbind xvfb cabextract unzip
+    - xvfb-run wineboot --init
   script:
-    - |
-      # Install netcat + OpenSSH client in the container
-      apt-get update -y && apt-get install -y netcat-openbsd openssh-client
-
-      echo "Checking SSH connectivity to $WINDOWS_HOST:$SSH_PORT with retries..."
-
-      for i in $(seq 1 24); do
-        if nc -z -w3 "$WINDOWS_HOST" "$SSH_PORT"; then
-          echo "✅ SSH port $SSH_PORT is reachable!"
-          break
-        fi
-        echo "⏳ Attempt $i: SSH port not reachable yet, retrying in 5s..."
-        sleep 5
-      done
-
-      if ! nc -z -w3 "$WINDOWS_HOST" "$SSH_PORT"; then
-        echo "❌ Could not reach $WINDOWS_HOST:$SSH_PORT after retries"
-        exit 1
-      fi
-
-      cat >/tmp/connect_windows.ps1 <<'PS1'
-      $secpass = ConvertTo-SecureString $env:WINDOWS_PASS -AsPlainText -Force
-      $cred    = New-Object System.Management.Automation.PSCredential ($env:WINDOWS_USER, $secpass)
-
-      Write-Host "Attempting SSH-based PowerShell remoting to $env:WINDOWS_HOST on port $env:SSH_PORT ..."
-      try {
-        $session = New-PSSession -HostName $env:WINDOWS_HOST -Port $env:SSH_PORT -UserName $env:WINDOWS_USER -SSHTransport
-        Invoke-Command -Session $session -ScriptBlock { whoami }
-        Remove-PSSession $session
-      }
-      catch {
-        Write-Error "❌ SSH connection failed: $($_.Exception.Message)"
-        exit 1
-      }
-      PS1
-    - pwsh -NoLogo -NonInteractive -File /tmp/connect_windows.ps1
-  needs:
-    - job: debug_gitlab_vars
-      artifacts: false
+    - echo "WINDOWS_USER=$WINDOWS_USER"
+    - echo "WINDOWS_PASS=$WINDOWS_PASS"
+    # Example: Download and run a Windows program
+    - wget -O testapp.exe https://example.com/some-windows-tool.exe
+    - xvfb-run wine testapp.exe
