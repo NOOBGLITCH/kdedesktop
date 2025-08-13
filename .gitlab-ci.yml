@@ -11,18 +11,21 @@ build-and-push:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
   script:
-    # Create Kaniko config with GitLab's built-in auth
+    # Auth for GitLab Container Registry
     - mkdir -p /kaniko/.docker
-    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
-    # Build and push in one step
+    - |
+      cat > /kaniko/.docker/config.json <<EOF
+      {"auths":{"$CI_REGISTRY":{"username":"$CI_REGISTRY_USER","password":"$CI_REGISTRY_PASSWORD"}}}
+      EOF
+
+    # Build & push (we DO NOT bake CRD_SSH_CODE at build time; pass it at runtime)
     - /kaniko/executor
         --context "${CI_PROJECT_DIR}"
         --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
         --destination "${DOCKER_IMAGE}:${DOCKER_TAG}"
-        --build-arg CRD_SSH_CODE="$CRD_SSH_CODE"
         --build-arg CRD_USERNAME="$CRD_USERNAME"
         --build-arg CRD_PASSWORD="$CRD_PASSWORD"
         --build-arg CRD_PIN="$CRD_PIN"
-        --build-arg CRD_AUTOSTART="$CRD_AUTOSTART"
+        --build-arg DEBIAN_FRONTEND=noninteractive
   only:
     - main
