@@ -1,0 +1,32 @@
+stages:
+  - setup
+  - build
+
+setup_msbuild:
+  stage: setup
+  
+  script:
+    - echo "Checking if MSBuild exists..."
+    - if (-not (Get-Command msbuild -ErrorAction SilentlyContinue)) {
+        echo "Installing Visual Studio Build Tools...";
+        Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vs_BuildTools.exe" -OutFile "vs_BuildTools.exe";
+        Start-Process -Wait -FilePath "vs_BuildTools.exe" -ArgumentList "--quiet --wait --norestart --nocache --installPath C:\BuildTools",
+        "--add Microsoft.VisualStudio.Workload.MSBuildTools",
+        "--add Microsoft.VisualStudio.Workload.NetCoreBuildTools",
+        "--add Microsoft.VisualStudio.Workload.ManagedDesktopBuildTools";
+        setx /M PATH "$($Env:PATH);C:\BuildTools\MSBuild\Current\Bin";
+      }
+
+build_litemanager:
+  stage: build
+  tags:
+    - windows
+  script:
+    - git clone https://github.com/RavikantAsoliya/LiteManager.git
+    - cd LiteManager
+    - msbuild LiteManager.sln /t:Restore
+    - msbuild LiteManager.sln /p:Configuration=Release /p:Platform="Any CPU"
+  artifacts:
+    paths:
+      - LiteManager/bin/Release/
+    expire_in: 7 days
