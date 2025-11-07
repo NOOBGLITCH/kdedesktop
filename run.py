@@ -52,17 +52,11 @@ def main():
 
     print("🧹 Removing unnecessary KDE components...")
     remove_list = [
-        "kwallet*", "kwalletmanager", "haruna",
+        "libreoffice*", "kwallet*", "kwalletmanager", "haruna",
         "jupyterlab", "kdeconnect", "elisa", "kde-games-*"
     ]
     remove_cmd = "sudo apt remove -y " + " ".join(remove_list) + " || true"
     run(remove_cmd, shell=True)
-
-    # Thorough LibreOffice removal
-    print("🧹 Thoroughly removing LibreOffice...")
-    run(["sudo", "apt-get", "remove", "-y", "libreoffice-core"])
-    run(["sudo", "apt-get", "remove", "-y", "fonts-opensymbol", "libreoffice", "libreoffice-*", "openoffice.org-dtd-officedocument1.0", "python*-uno", "uno-libs3-*", "ure", "ure-dbg"], shell=True)
-
     run(["sudo", "apt", "autoremove", "-y"])
     print("✅ Removed unwanted KDE apps and cleaned dependencies.")
 
@@ -117,7 +111,8 @@ def main():
     run(["sudo", "chmod", "+x", "/etc/chrome-remote-desktop-session"])
 
     print("🔑 Registering Chrome Remote Desktop...")
-    run(["sudo", "-u", username, "DISPLAY=:0", "chrome-remote-desktop", "--code", CRD_Code, "--pin", Pin])
+    reg_cmd = f"sudo -u {username} DISPLAY=:0 chrome-remote-desktop --code '{CRD_Code}' --pin {Pin}"
+    run(reg_cmd, shell=True)
     print("✅ CRD registration complete.")
 
     print("🚀 Enabling CRD service...")
