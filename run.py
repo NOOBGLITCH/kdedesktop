@@ -1,180 +1,177 @@
 #!/usr/bin/env python3
 import os
 import subprocess
+import shutil
 import sys
+from pathlib import Path
 
-def run(cmd, shell=False):
-    print(f"▶️ {' '.join(cmd) if not shell else cmd}")
-    subprocess.run(cmd, shell=shell, check=True)
+# -------------------- User inputs / config --------------------
+CRD_SSH_Code = input("Google CRD SSH Code : ").strip()
+username = "user"       # change if you want a different default
+password = "root"       # change default password here
+Pin = 123456            # must be >= 6 digits
+Autostart = True        # create autostart .desktop entry
+KeepAlive = True        # if True, script will block at end (to keep session alive)
+# --------------------------------------------------------------
+
+def run(cmd, **kwargs):
+    """Wrapper around subprocess.run that prints command and raises on failure."""
+    print(f"> {' '.join(cmd) if isinstance(cmd, (list, tuple)) else cmd}")
+    return subprocess.run(cmd, check=True, **kwargs)
+
+def run_shell(cmd):
+    """Run a shell command string (shell=True)."""
+    print(f"> {cmd}")
+    return subprocess.run(cmd, shell=True, check=True)
 
 def install_with_retry(pkgs):
+    """Install apt packages with a retry for broken dependencies."""
     try:
-        run(["sudo", "apt", "install", "-y"] + pkgs)
+        run(["apt", "install", "-y"] + pkgs)
     except subprocess.CalledProcessError:
-        print("⚠️ Fixing broken dependencies...")
-        run(["sudo", "apt", "install", "-y", "--fix-broken"])
-        run(["sudo", "apt", "install", "-y"] + pkgs)
-        run(["sudo", "apt", "upgrade", "-y"] + pkgs)
+        print("⚠️ Fixing broken dependencies and retrying...")
+        run(["apt", "install", "-y", "--fix-broken"])
+        run(["apt", "install", "-y"] + pkgs)
 
-def main():
-    CRD_Code = input("Chrome Remote Desktop Authentication Code: ").strip()
-    if not CRD_Code:
-        print("❌ CRD Auth Code required.")
-        sys.exit(1)
-    username = input("Username [user]: ").strip() or "user"
-    password = input("Password [root]: ").strip() or "root"
-    Pin = input("6-digit PIN [123456]: ").strip() or "123456"
-    if not Pin.isdigit() or len(Pin) != 6:
-        print("❌ PIN must be 6 digits.")
-        sys.exit(1)
+class CRDSetup:
+    def __init__(self, user):
+        self.user = user
+        run(["apt", "update", "-y"])
+        self.ensure_user()
+        self.installCRD()
+        self.installDesktopEnvironment()
+        self.installGoogleChrome()
+        self.finish()
 
+    def ensure_user(self):
+        try:
+            subprocess.run(["id", self.user], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            print(f"User '{self.user}' already exists.")
+        except subprocess.CalledProcessError:
+            print(f"Creating user '{self.user}'...")
+            run(["useradd", "-m", self.user])
+        run(["usermod", "-aG", "sudo", self.user])
+        run_shell(f"echo '{self.user}:{password}' | chpasswd")
+        run(["sed", "-i", "s:/bin/sh:/bin/bash:g", "/etc/passwd"])
+
+    def installCRD(self):
+        print("Installing Chrome Remote Desktop .deb and dependencies...")
+        run(["wget", "-q", "https://dl.google.com/linux/direct/chrome-remote-desktop_current_amd64.deb", "-O", "/tmp/chrome-remote-desktop_current_amd64.deb"])
+        try:
+            run(["dpkg", "--install", "/tmp/chrome-remote-desktop_current_amd64.deb"])
+        except subprocess.CalledProcessError:
+            run(["apt", "install", "-y", "--fix-broken"])
+            run(["dpkg", "--install", "/tmp/chrome-remote-desktop_current_amd64.deb"])
+        print("✅ Chrome Remote Desktop package installed.")
+
+    def installDesktopEnvironment(self):
+        print("Installing KDE (kde-standard)... This can take a while.")
+        os.environ["DEBIAN_FRONTEND"] = "noninteractive"
+        run(["apt", "update", "-y"])
+        install_with_retry(["kde-standard", "-y"])
+        run_shell('bash -c \'echo "exec /usr/bin/startplasma-x11" > /etc/chrome-remote-desktop-session\'')
+        try:
+            run(["apt", "remove", "--assume-yes", "gnome-terminal", "light-locker"])
+        except subprocess.CalledProcessError:
+            print("Note: some optional packages could not be removed (they may not be installed).")
+        try:
+            run(["systemctl", "disable", "sddm.service"])
+        except subprocess.CalledProcessError:
+            print("sddm.service not found or could not be disabled.")
+        print("✅ KDE Plasma installed and configured for Chrome Remote Desktop.")
+
+   def installGoogleChrome(self):
     try:
-        run(["sudo", "useradd", "-m", "-s", "/bin/bash", username])
-    except subprocess.CalledProcessError:
-        print(f"⚠️ User '{username}' already exists.")
-    run(["sudo", "usermod", "-aG", "sudo", username])
-    run(["sudo", "bash", "-c", f"echo '{username}:{password}' | chpasswd"])
+        print("Downloading and running browser setup...")
+        
+        # Download the setup script from GitHub
+        run(["wget", "-q", "https://raw.githubusercontent.com/NOOBGLITCH/kdedesktop/refs/heads/main/setup.sh", "-O", "/tmp/setup.sh"])
+        
+        # Make it executable and run with sudo bash
+        run(["chmod", "+x", "/tmp/setup.sh"])
+        run(["sudo", "bash", "/tmp/setup.sh"])
+        
+        print("✅ Browser setup completed.")
+        
+    except Exception as e:
+        print(f"❌ Browser setup failed: {e}")
 
-    print("🔄 Updating packages...")
-    run(["sudo", "apt", "update", "-y"])
 
-    print("📦 Installing core dependencies...")
-    deps = [
-        "xvfb", "wget", "curl", "xserver-xorg-video-dummy", "policykit-1", "xbase-clients",
-        "python3-psutil", "python3-xdg", "gsettings-desktop-schemas", "libgbm1",
-        "libgtk-3-0", "libxdamage1", "libxfixes3", "libxkbcommon0", "libxrandr2", "libxtst6"
-    ]
-    install_with_retry(deps)
-
-    print("🖥️ Installing full Kubuntu Desktop environment...")
-    run(["sudo", "apt", "install", "-y", "kubuntu-desktop"])
-    print("✅ Kubuntu Desktop installed successfully.")
-
-    print("🧹 Removing unnecessary KDE components...")
-    remove_list = [
-        "libreoffice*", "kwallet*", "kwalletmanager", "haruna",
-        "jupyterlab", "kdeconnect", "elisa", "kde-games-*"
-    ]
-    remove_cmd = "sudo apt remove -y " + " ".join(remove_list) + " || true"
-    run(remove_cmd, shell=True)
-    run(["sudo", "apt", "autoremove", "-y"])
-    print("✅ Removed unwanted KDE apps and cleaned dependencies.")
-
-    print("🔁 Upgrading system packages...")
-    run(["sudo", "apt", "update", "-y"])
-    run(["sudo", "apt", "upgrade", "-y"])
-    print("✅ System updated and upgraded.")
-
-    FIREFOX_VER = "144.0.2"
-    firefox_tar = f"firefox-{FIREFOX_VER}.tar.xz"
-    print(f"🌐 Installing Firefox {FIREFOX_VER} manually...")
-    if not os.path.exists(firefox_tar):
-        run(["sudo", "wget", f"https://download-installer.cdn.mozilla.net/pub/firefox/releases/{FIREFOX_VER}/linux-x86_64/en-US/firefox-{FIREFOX_VER}.tar.xz"])
-    else:
-        print(f"ℹ️ Firefox tarball {firefox_tar} already downloaded. Skipping.")
-    if os.path.exists("/opt/firefox"):
-        print("ℹ️ /opt/firefox already exists. Removing to reinstall.")
-        run(["sudo", "rm", "-rf", "/opt/firefox"])
-    run(["sudo", "tar", "-xJvf", firefox_tar])
-    run(["sudo", "mv", "firefox", "/opt"])
-    run(["sudo", "ln", "-sf", "/opt/firefox/firefox", "/usr/local/bin/firefox"])
-    desktop_file = "/usr/local/share/applications/firefox.desktop"
-    if not os.path.exists(desktop_file):
-        run(["sudo", "wget", "https://raw.githubusercontent.com/mozilla/sumo-kb/main/install-firefox-linux/firefox.desktop", "-P", "/usr/local/share/applications"])
-    else:
-        print("ℹ️ Firefox desktop file already exists. Skipping.")
-    print("✅ Firefox installed and integrated.")
-
-    chrome_deb = "google-chrome-stable_current_amd64.deb"
-    print("🌍 Installing Google Chrome...")
-    if not os.path.exists(chrome_deb):
-        run(["sudo", "wget", "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"])
-    else:
-        print(f"ℹ️ Chrome deb {chrome_deb} already downloaded. Skipping.")
-    try:
-        run(["sudo", "dpkg", "-i", chrome_deb])
-    except subprocess.CalledProcessError:
-        run(["sudo", "apt", "-f", "install", "-y"])
-    print("✅ Google Chrome installed.")
-
-    print("🧩 Checking and installing Chrome Remote Desktop...")
-    crd_deb = "chrome-remote-desktop_current_amd64.deb"
-    if os.path.exists(crd_deb):
-        print("ℹ️ CRD .deb file found. Reinstalling to ensure integrity...")
-    else:
-        run(["sudo", "wget", "https://dl.google.com/linux/direct/chrome-remote-desktop_current_amd64.deb"])
-    run(["sudo", "dpkg", "-i", crd_deb])
-    run(["sudo", "apt", "-f", "install", "-y"])
-    print("✅ Chrome Remote Desktop installed or reinstalled successfully.")
-
-    run(["sudo", "bash", "-c", "echo 'exec /etc/X11/Xsession /usr/bin/startplasma-x11' > /etc/chrome-remote-desktop-session"])
-    run(["sudo", "chmod", "+x", "/etc/chrome-remote-desktop-session"])
-
-    print("🔑 Registering Chrome Remote Desktop...")
-    reg_cmd = f"sudo -u {username} DISPLAY=:0 chrome-remote-desktop --code '{CRD_Code}' --pin {Pin}"
-    run(reg_cmd, shell=True)
-    print("✅ CRD registration complete.")
-
-    print("🚀 Enabling CRD service...")
-    run(["sudo", "systemctl", "enable", "--now", "chrome-remote-desktop"])
-
-    print("⚙️ Creating Firefox autostart URLs...")
-    autostart_dir = f"/home/{username}/.config/autostart"
-    os.makedirs(autostart_dir, exist_ok=True)
-    urls = [
-        "https://addons.mozilla.org/en-US/firefox/addon/bitwarden-password-manager",
-        "https://addons.mozilla.org/en-US/firefox/addon/user-agent-string-switcher"
-    ]
-    for url in urls:
-        desktop_file = os.path.join(autostart_dir, f"autostart_{url.split('/')[-2]}.desktop")
-        with open(desktop_file, "w") as f:
-            f.write(f"""[Desktop Entry]
+    def finish(self):
+        try:
+            if Autostart:
+                autostart_dir = Path(f"/home/{self.user}/.config/autostart")
+                autostart_dir.mkdir(parents=True, exist_ok=True)
+                link = "https://github.com/NOOBGLITCH/kdedesktop"
+                colab_autostart = f"""[Desktop Entry]
 Type=Application
-Name=Autostart {url.split('/')[-2]}
-Exec=firefox {url}
-Icon=firefox
+Name=Colab
+Exec=sh -c "sensible-browser {link}"
+Icon=
+Comment=Open a predefined notebook at session signin.
 X-GNOME-Autostart-enabled=true
-""")
-        run(["sudo", "chmod", "+x", desktop_file])
-        run(["sudo", "chown", f"{username}:{username}", desktop_file])
-    print("✅ Firefox autostart URLs added.")
-
-    desktop_dir = f"/home/{username}/Desktop"
-    os.makedirs(desktop_dir, exist_ok=True)
-    for app, icon in [("google-chrome", "google-chrome"), ("firefox", "firefox")]:
-        desktop_file = os.path.join(desktop_dir, f"{app}.desktop")
-        with open(desktop_file, "w") as f:
-            f.write(f"""[Desktop Entry]
-Type=Application
-Name={app.title()}
-Exec={app}
-Icon={icon}
-Terminal=false
-Categories=Network;WebBrowser;
-""")
-        run(["sudo", "chmod", "+x", desktop_file])
-        run(["sudo", "chown", f"{username}:{username}", desktop_file])
-    print("✅ Desktop shortcuts created.")
-
-    # Remove light-locker and disable lightdm
-    os.system("sudo apt purge light-locker")
-    os.system("systemctl disable lightdm.service")
-
-    pin_cmd = f"""
-qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript '
-var panel = panels()[0];
-panel.addWidget('org.kde.plasma.icontasks');
-panel.widgetById(panel.widgetIds()[0]).currentConfigGroup = ['General'];
-panel.widgetById(panel.widgetIds()[0]).writeConfig('launchers', ['applications:google-chrome.desktop', 'applications:firefox.desktop']);
-'
 """
-    run(["sudo", "-u", username, "bash", "-c", pin_cmd])
-    print("📌 Chrome and Firefox pinned to taskbar.")
-    print("\n✅ Full setup completed successfully with KDE, cleanup, and CRD integrity check!\n")
+                desktop_file = autostart_dir / "colab.desktop"
+                desktop_file.write_text(colab_autostart)
+                run(["chmod", "+x", str(desktop_file)])
+                run(["chown", "-R", f"{self.user}:{self.user}", f"/home/{self.user}/.config"])
+                print("✅ Autostart .desktop created.")
+        except Exception as e:
+            print(f"⚠️ Autostart creation failed: {e}")
+
+        try:
+            run(["usermod", "-aG", "chrome-remote-desktop", self.user])
+        except Exception as e:
+            print(f"⚠️ Could not add user to chrome-remote-desktop group: {e}")
+
+        if CRD_SSH_Code:
+            try:
+                command = f"{CRD_SSH_Code} --pin={Pin}"
+                run_shell(f"su - {self.user} -c '{command}'")
+            except Exception as e:
+                print(f"⚠️ Running CRD registration command failed: {e}")
+        else:
+            print("⚠️ No CRD SSH code provided; skipping registration step.")
+
+        try:
+            run(["service", "chrome-remote-desktop", "start"])
+        except Exception:
+            print("⚠️ Could not start chrome-remote-desktop service (it might not be installed correctly).")
+
+        print("\n..........................................................")
+        print(".....Brought By The Disala................................")
+        print("..........................................................")
+        print("Log in PIN :", Pin)
+        print("User Name :", self.user)
+        print("User Pass :", password)
+        print("..........................................................\n")
+
+        if KeepAlive:
+            print("Keeping script alive (press Ctrl+C to exit).")
+            try:
+                while True:
+                    pass
+            except KeyboardInterrupt:
+                print("\nExiting.")
+
+# --------------------- Main execution ---------------------
+def main():
+    if os.geteuid() != 0:
+        print("Error: This script must be run as root. Please run with sudo or as root.")
+        sys.exit(1)
+
+    if CRD_SSH_Code == "":
+        print("Please enter authcode from the given link and run again.")
+        sys.exit(1)
+    elif len(str(Pin)) < 6:
+        print("Enter a pin of 6 or more digits.")
+        sys.exit(1)
+
+    try:
+        CRDSetup(username)
+    except Exception as e:
+        print(f"Fatal error during setup: {e}")
+        sys.exit(1)
 
 if __name__ == "__main__":
-    try:
-        main()
-    except subprocess.CalledProcessError as e:
-        print(f"❌ Error: {e}")
-        sys.exit(1)
+    main()
